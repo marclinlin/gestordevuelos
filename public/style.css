@@ -1,0 +1,190 @@
+* {
+    margin: 0;
+    padding: 0;  
+}
+
+html, body {
+    height: 100%;
+    min-height: 400px;
+}
+
+body {
+    color: #4a5055;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    font-weight: 400;
+    line-height: 1.5;
+}
+
+.container {
+    height: 100%;
+    text-align: center;
+    box-sizing: border-box;
+}
+
+.calendar {
+    margin-top: 2rem;
+    box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+    width: 90%;
+    height: 90%;
+    display: inline-block;
+    border-radius: 10px;
+}
+
+.calendar-header {
+    padding-top: 20px;
+    padding-bottom: 20px;
+    height: 100px;
+    text-align: center;
+    width: 100%;
+    display: inline-block;
+    box-sizing: border-box;
+}
+
+.calendar-days {
+    height: calc(100% - 100px);
+    width: 100%;
+    min-width: 350px;
+    text-align: center;
+    display: inline-block;
+    box-sizing: border-box;
+    position: relative;
+}
+
+.footer {
+    height: 5%
+}
+
+ul {list-style-type: none;}
+
+.month {
+    text-align: center;
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: rgba(81, 86, 93)
+}
+
+.year {
+    text-align: center;
+    font-size: 1rem;
+    color: #a3a3a3;
+}
+
+.weekdays {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    height: 40px;
+    align-items: center;
+    box-sizing: border-box;
+    border-top: 1px solid rgb(200, 200, 200);
+}
+
+.days {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: stretch;
+    height: calc(100% - 40px);
+    min-height: 250px;
+}
+
+.weekdays li {
+    text-align: center;
+    box-sizing: border-box;
+    text-transform: uppercase;
+}
+
+.days li {
+    width: calc(14.28571% + 1px);
+    height: calc(16.6666% + 1px);
+    text-align: right;
+    padding: 0.5rem 1rem;
+    box-sizing: border-box;
+    cursor: pointer;
+    border: 1px solid rgb(200, 200, 200);
+    margin-left: -1px;
+    margin-top: -1px;
+}
+
+.days li:hover {
+    background-color: aliceblue;
+}
+
+.days li.today {
+    background-color: #3797ff;
+    color: white;
+}
+
+.days li.previous-next {
+    color: lightgray;
+    background-image: url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23f9f9fa' fill-opacity='1' fill-rule='evenodd'%3E%3Cpath d='M0 40L40 0H20L0 20M40 40V20L20 40'/%3E%3C/g%3E%3C/svg%3E");
+}
+
+.days li.previous-next:hover {
+    background-color: rgb(252, 252, 252);
+}
+
+.days li.top {
+    border-top: 1px solid rgb(200, 200, 200);
+}
+
+.days li.top-left {
+    border-top: 1px solid rgb(200, 200, 200);
+}
+
+.days li.top-right {
+    border-top: 1px solid rgb(200, 200, 200);
+}
+
+.days li.left {
+    border-left: 1px solid rgb(200, 200, 200);
+}
+
+.days li.top-left {
+    border-left: 1px solid rgb(200, 200, 200);
+}
+
+.days li.bottom-left {
+    border-left: 1px solid rgb(200, 200, 200);
+    border-bottom-left-radius: 10px;
+}
+
+.days li.bottom-right {
+    border-left: 1px solid rgb(200, 200, 200);
+    border-bottom-right-radius: 10px;
+}
+
+.days li.center {
+    border-left: 1px solid rgb(200, 200, 200);
+}
+
+.no-select {
+    pointer-events: none;
+    -webkit-touch-callout: none; /* iOS Safari */
+      -webkit-user-select: none; /* Safari */
+       -khtml-user-select: none; /* Konqueror HTML */
+         -moz-user-select: none; /* Old versions of Firefox */
+          -ms-user-select: none; /* Internet Explorer/Edge */
+              user-select: none; /* Non-prefixed version, currently
+                                    supported by Chrome, Edge, Opera and Firefox */
+  }
+
+.event {
+      margin-bottom: 0.2rem;
+      padding: 0.2rem 0.4rem 0.2rem 0.4rem;
+      font-size: 0.8rem;
+      border-radius: 4px;
+      float: left;
+      font-weight: 600;
+  }
+
+.event.class {
+    background-color: rgb(255, 202, 132);
+}
+
+.event.exam {
+    background-color: rgb(255, 138, 123);
+    color: white;
+}
+
+.event.flight {
+    background-color: rgb(164, 229, 255);
+}
