@@ -69,7 +69,7 @@ socket.on('month_calendar', receivedData => {
     ]
 
 
-    const currentYear = '2020'
+    /* const currentYear = '2020'
     const currentMonth = 'May'
     const previousMonth = 'April'
     const nextMonth = 'June'
@@ -82,7 +82,7 @@ socket.on('month_calendar', receivedData => {
         25, 26, 27, 28, 29, 30, 31,
         1, 2, 3, 4, 5, 6, 7
     ];
-    const currentDay = 27;
+    const currentDay = 27; */
 
 
 
