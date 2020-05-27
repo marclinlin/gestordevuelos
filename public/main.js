@@ -1,15 +1,20 @@
-const socket = io();
+const socket = io.connect('http://localhost:3000/');
 
-socket.emit('get_month_calendar');
-socket.on('month_calendar', receivedData => {
-    const currentYear = receivedData.currentYear;
-    const currentMonth = receivedData.currentMonth;
-    const previousMonth = receivedData.previousMonth;
-    const nextMonth = receivedData.nextMonth;
-    const firstDayOfweek = receivedData.firstDayOfweek;
-    const days = receivedData.days;
-
+const output = {
+    clientDate: new Date(),
+    weekStartDay: 'Monday'
+}
+console.log(output.clientDate);
+socket.emit('get_month_calendar', output);
+socket.on('month_calendar', input => {
+    const currentYear = input.currentYear;
+    const currentMonth = input.currentMonth;
     const currentDay = new Date().getDate();
+    const previousMonth = input.previousMonth;
+    const nextMonth = input.nextMonth;
+    const weekStartingDay = input.weekStartingDay;
+    const days = input.days;
+
     const events = [
         {
             day: 19,
@@ -88,7 +93,7 @@ socket.on('month_calendar', receivedData => {
 
     /* CREATE CALENDAR */
     // Add year, month and weekdays
-    const weekDays = firstDayOfweek === 'Monday' ? ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'] : (firstDayOfweek === 'Sunday' ? ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'] : ['Sat', 'Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri']);
+    const weekDays = weekStartingDay === 'Monday' ? ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'] : (weekStartingDay === 'Sunday' ? ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'] : ['Sat', 'Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri']);
     document.querySelector('div.year').innerHTML = currentYear;
     document.querySelector('div.month').innerHTML = currentMonth;
     const weekDaysList = document.querySelector('ul.weekdays')
@@ -101,6 +106,7 @@ socket.on('month_calendar', receivedData => {
 
     // Add days
     const numberOfDays = days.length;
+    const rowsClass = numberOfDays === 42 ? 'six-rows' : (numberOfDays === 35 ? 'five-rows' : 'four-rows')
     const daysElement = document.querySelector('ul.days')
     let month = days[0] >= 23 ? previousMonth : currentMonth;
     for (const [index, dayNumber] of days.entries()) {
@@ -109,6 +115,7 @@ socket.on('month_calendar', receivedData => {
         }
         const newDay = document.createElement('li');
         newDay.setAttribute('id', `${dayNumber}-${month}`)
+        newDay.classList.add(rowsClass)
         if (month !== currentMonth) {
             newDay.classList.add('previous-next')
         } else if (dayNumber === currentDay) {

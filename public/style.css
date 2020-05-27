@@ -84,6 +84,7 @@ ul {list-style-type: none;}
     align-items: stretch;
     height: calc(100% - 40px);
     min-height: 250px;
+    grid-gap: 0;
 }
 
 .weekdays li {
@@ -91,6 +92,19 @@ ul {list-style-type: none;}
     box-sizing: border-box;
     text-transform: uppercase;
 }
+
+.days li.six-rows {
+    height: calc(16.6666% + 1px);
+}
+
+.days li.five-rows {
+    height: calc(20% + 1px);
+}
+
+.days li.four-rows {
+    height: calc(25% + 1px);
+}
+
 
 .days li {
     width: calc(14.28571% + 1px);
@@ -123,10 +137,6 @@ ul {list-style-type: none;}
 }
 
 .days li.top {
-    border-top: 1px solid rgb(200, 200, 200);
-}
-
-.days li.top-left {
     border-top: 1px solid rgb(200, 200, 200);
 }
 
