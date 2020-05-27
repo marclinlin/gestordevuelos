@@ -1,10 +1,10 @@
 const socket = io.connect('http://localhost:3000/');
 
+// GET MONTH CALENDAR
 const output = {
     clientDate: new Date(),
     weekStartDay: 'Monday'
 }
-console.log(output.clientDate);
 socket.emit('get_month_calendar', output);
 socket.on('month_calendar', input => {
     const currentYear = input.currentYear;
@@ -166,3 +166,5 @@ socket.on('month_calendar', input => {
     })
 
 })
+
+//

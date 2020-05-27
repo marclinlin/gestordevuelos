@@ -35,8 +35,8 @@ io.on('connection', socket => {
         const clientDate = new Date(input.clientDate)
         const weekStartDay = input.weekStartDay;
         const output = calendarDaysMonth(clientDate, weekStartDay)
-        console.log(output);
         socket.emit('month_calendar', output)
+        console.log(`Month calendar sent`);
     })
 
     // Calculate month days (monday = 1, sunday = 0, satuday = -1)
@@ -113,7 +113,7 @@ io.on('connection', socket => {
         output.nextMonth = nextMonth
         output.weekStartingDay = weekStartingDay
         output.days = days
-        console.log(days)
+        // console.log(days)
         return output;
     }
 
@@ -142,7 +142,7 @@ io.on('connection', socket => {
         const currentlDay = date.getDate()
         const currentMilliseconds = date.getTime()
         const firstDayWeekday = date.getDay()
-        console.log(firstDayWeekday)
+        // console.log(firstDayWeekday)
 
         // past week days
         for (let i = firstDayWeekday - a; i > 0; i--) {
