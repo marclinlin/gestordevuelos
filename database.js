@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 
-mongoose.connect('mongodb://localhost/events', {
+mongoose.connect('mongodb://localhost/db', {
    useCreateIndex: true,
    useNewUrlParser: true,
    useFindAndModify: false, 

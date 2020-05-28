@@ -3,16 +3,19 @@ const Schema = mongoose.Schema;
 
 const EventSchema = Schema({
   typeOfEvent: String,
-  title: String,
-  startTime: Object,
-  endTime: Object,
+  startTime: Date,
+  endTime: Date,
   description: String,
   instructor: String,
   student: String,
+  aircraft: String,
+  room: String,
+  Subject: String,
   status: {
     type: Boolean,
     default: false
   }
 });
 
-module.exports = mongoose.model('event', EventSchema);
+
+module.exports = mongoose.model('events', EventSchema);

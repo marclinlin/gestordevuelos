@@ -3,7 +3,10 @@ const path = require('path')
 const http = require('http')
 const socketio = require('socket.io')
 const calendarDaysMonth = require('./utils/functions.js')
-const Event = require('./utils/models.js')
+const Event = require('./utils/models/event.js')
+const User = require('./utils/models/user.js')
+const mongoose = require('mongoose');
+
 
 // Initialization
 const app = express()
@@ -29,6 +32,22 @@ server.listen(app.get('port'), () => {
 })
 
 
+// const event = new Event()
+// event.typeOfEvent = 'class'
+// event.startTime = new Date
+// event.endTime = new Date
+// event.subject = 'Perf'
+// event.instructor = 'Ignacio Pablos'
+// event.student = 'David Verdeguer'
+// event.room = 'A21'
+// event.save()
+
+// async function findinstructors() {
+// const instructors = await User.find({typeOfUser:'instructor'})
+// console.log(instructors)
+// }
+// findinstructors()
+
 io.on('connection', socket => {
     console.log('New connection')
 
@@ -39,12 +58,58 @@ io.on('connection', socket => {
         socket.emit('month_calendar', output)
         console.log(`Month calendar sent`);
     })
-    // Create a event
-    // const event = new Event()
-    // event.title = 'asda'
-    // event.description = 'tora'
-    // event.status = true
-    // event.save()
+
+    socket.on('new_event', input => {
+        // Create a flight event
+        const event = new Event()
+        if(input.type === 'flight'){
+            event.typeOfEvent = 'flight'
+            event.startTime = input.startTime
+            event.endTime = input.endTime
+            event.instructor = input.instructor
+            event.student = input.student
+            event.aircraft = input.aircraft
+            event.save()
+        }
+        if(input.type === 'class'){
+            event.typeOfEvent = 'class'
+            event.startTime = input.startTime
+            event.endTime = input.endTime
+            event.subject = input.subject
+            event.instructor = input.instructor
+            event.student = input.student
+            event.room = input.room
+            event.save()
+        }
+        if(input.type === 'exam'){
+            event.typeOfEvent = 'exam'
+            event.startTime = input.startTime
+            event.endTime = input.endTime
+            event.subject = input.subject
+            event.instructor = input.instructor
+            event.student = input.student
+            event.room = input.room
+            event.save()
+        }
+        const events = async () => {
+            await Event.find()
+        } 
+        console.log(events)
+        socket.emit('update_events', events)
+
+    })
+
+
+    socket.on('available_instructors', async () => {
+        const instructors = await User.find({typeOfUser:'instructor'})
+        socket.emit('available_instructors', instructors)
+    })
+
+    socket.on('available_students', async () => {
+        const students = await User.find({typeOfUser:'student'})
+        socket.emit('available_students', students)
+    })
+   
 
     // update a event
     // let { id } = ; // insert ID
@@ -57,8 +122,7 @@ io.on('connection', socket => {
     // let { id } =  // gather ID
     // await Task.remove({_id: id}); //
     
-    // find events
-    //const tasks = await Task.find();
+    
 
 
     
@@ -85,13 +149,13 @@ io.on('connection', socket => {
         const firstDayWeekday = date.getDay()
         // console.log(firstDayWeekday)
 
-        // past week days
+        // past weekdays
         for (let i = firstDayWeekday - a; i > 0; i--) {
             let pastDays = new Date(currentMilliseconds - 86400000 * i).getDate()
             days.push(pastDays)
         }
 
-        //next week days
+        //next weekdays
         for (let i = 0; i < 8; i++) {
             if (days.length < 7) {
                 let futureDays = new Date(currentMilliseconds + 86400000 * i).getDate()
