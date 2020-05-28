@@ -51,18 +51,26 @@ server.listen(app.get('port'), () => {
 io.on('connection', socket => {
     console.log('New connection')
 
+    const sendEvents = async () => {
+        const events = await Event.find()
+        console.log(events)
+        socket.emit('update_events', events)
+        socket.emit('message', 'Events received from the server')
+    }
+
     socket.on('get_month_calendar', input => {
         const clientDate = new Date(input.clientDate)
         const weekStartDay = input.weekStartDay;
         const output = calendarDaysMonth(clientDate, weekStartDay)
         socket.emit('month_calendar', output)
         console.log(`Month calendar sent`);
+        sendEvents();
     })
 
     socket.on('new_event', input => {
         // Create a flight event
         const event = new Event()
-        if(input.type === 'flight'){
+        if (input.type === 'flight') {
             event.typeOfEvent = 'flight'
             event.startTime = input.startTime
             event.endTime = input.endTime
@@ -70,8 +78,8 @@ io.on('connection', socket => {
             event.student = input.student
             event.aircraft = input.aircraft
             event.save()
-        }
-        if(input.type === 'class'){
+            socket.emit('message', 'The event was saved to the DB')
+        } else if (input.type === 'class') {
             event.typeOfEvent = 'class'
             event.startTime = input.startTime
             event.endTime = input.endTime
@@ -80,8 +88,8 @@ io.on('connection', socket => {
             event.student = input.student
             event.room = input.room
             event.save()
-        }
-        if(input.type === 'exam'){
+            socket.emit('message', 'The event was saved to the DB')
+        } else if (input.type === 'exam') {
             event.typeOfEvent = 'exam'
             event.startTime = input.startTime
             event.endTime = input.endTime
@@ -90,26 +98,20 @@ io.on('connection', socket => {
             event.student = input.student
             event.room = input.room
             event.save()
+            socket.emit('message', 'The event was saved to the DB')
         }
-        const events = async () => {
-            await Event.find()
-        } 
-        console.log(events)
-        socket.emit('update_events', events)
-
     })
 
-
     socket.on('available_instructors', async () => {
-        const instructors = await User.find({typeOfUser:'instructor'})
+        const instructors = await User.find({ typeOfUser: 'instructor' })
         socket.emit('available_instructors', instructors)
     })
 
     socket.on('available_students', async () => {
-        const students = await User.find({typeOfUser:'student'})
+        const students = await User.find({ typeOfUser: 'student' })
         socket.emit('available_students', students)
     })
-   
+
 
     // update a event
     // let { id } = ; // insert ID
@@ -121,11 +123,11 @@ io.on('connection', socket => {
     // delete event
     // let { id } =  // gather ID
     // await Task.remove({_id: id}); //
-    
-    
 
 
-    
+
+
+
 
     // Calculate week days
     function calendarDaysWeek(clientDate, weekStartDay) {

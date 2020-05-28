@@ -5,35 +5,220 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gestor de vuelos</title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="src/style.css">
 </head>
 
 <body>
-    <div class="container">
-        <div class="calendar">
-            <div class="calendar-header">
-                <div class="month no-select">
-                    <!-- May -->
-                </div>
-                <div class="year no-select">
-                    <!-- 2020 -->
-                </div>
+    <div id="overlay" style="display: none" class="before-click">
+        <!-- block/none -->
+        <div id="type-buttons">
+            <div style="display: none">
+                <input type="radio" id="flight" name="type-radio" value="flight"> <!-- checked -->
+                <input type="radio" id="class" name="type-radio" value="class">
+                <input type="radio" id="exam" name="type-radio" value="exam">
             </div>
-            <div class="calendar-days">
-                <ul class="weekdays">
-                    <!-- <li class='no-select'>Mon</li>
-                    <li class='no-select'>Tue</li>
-                    <li class='no-select'>Wed</li>
-                    <li class='no-select'>Thu</li>
-                    <li class='no-select'>Fri</li>
-                    <li class='no-select'>Sat</li>
-                    <li class='no-select'>Sun</li> -->
-                </ul>
-                <ul class="days">
-                </ul>
+            <div class="event-type">
+                <label id="flight-label" for="flight" class="before-click"><span>Flight</span></label>
+                <label id="class-label" for="class" class="before-click"><span>Class</span></label>
+                <label id="exam-label" for="exam" class="before-click"><span>Exam</span></label>
             </div>
         </div>
-        <div class="footer"></div>
+        <div id="details">
+            <!-- Flight form -->
+            <form action="" id="flight-form" style="display:none">
+                <div class="form-field">
+                    <div class="label">Start time</div>
+                    <input type="datetime-local" id="flightStartTime" name="startTime">
+                </div>
+
+
+                <div class="form-field">
+                    <!-- <label for="endTime">End Time</label> -->
+                    <div class="label">End Time</div>
+                    <input type="datetime-local" id="flightEndTime" name="endTime">
+                </div>
+
+                <div class="form-field">
+                    <div class="label">Instructor:</div>
+                    <div class="input size50">
+                        <select id="flightInstructor" class="styled">
+                            <option selected>Select instructor</option>
+                            <option>Rubén Velázquez</option>
+                            <option>Tomás Losa</option>
+                            <option>Jaime Martín</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-field">
+                    <div class="label">Student:</div>
+                    <div class="input size50">
+                        <select id="student" class="styled">
+                            <option selected>Select student</option>
+                            <option>Marcos Lin</option>
+                            <option>David Verdeguer</option>
+                            <option>Ahmed al-Kindi</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-field">
+                    <div class="label">Aircraft:</div>
+                    <div class="input size50">
+                        <select id="aircraft" class="styled">
+                            <option selected>Select aircraft</option>
+                            <option>EC-NAQ</option>
+                            <option>EC-NEM</option>
+                        </select>
+                    </div>
+                    <input type="submit">
+                </div>
+            </form>
+
+            <!-- Class form -->
+            <form action="" id="class-form" style="display:none">
+                <div class="form-field">
+                    <div class="label">Start time</div>
+                    <input type="datetime-local" id="classStartTime" name="startTime">
+                </div>
+
+
+                <div class="form-field">
+                    <!-- <label for="endTime">End Time</label> -->
+                    <div class="label">End Time</div>
+                    <input type="datetime-local" id="classEndTime" name="endTime">
+                </div>
+
+                <div class="form-field">
+                    <div class="label">Instructor:</div>
+                    <div class="input size50">
+                        <select id="classInstructor" class="styled">
+                            <option selected>Select instructor</option>
+                            <option>Rubén Velázquez</option>
+                            <option>Tomás Losa</option>
+                            <option>Jaime Martín</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-field">
+                    <div class="label">Student:</div>
+                    <div class="input size50">
+                        <select id="student" class="styled">
+                            <option selected>Select student</option>
+                            <option>Marcos Lin</option>
+                            <option>David Verdeguer</option>
+                            <option>Ahmed al-Kindi</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-field">
+                    <div class="label">Subject:</div>
+                    <div class="input size50">
+                        <select id="classSubject" class="styled">
+                            <option selected>Select subject</option>
+                            <option>Meteorology</option>
+                            <option>Principles of flight</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-field">
+                    <div class="label">Room:</div>
+                    <div class="input size50">
+                        <select id="room" class="styled">
+                            <option selected>Select room</option>
+                            <option>Room 1</option>
+                            <option>Room 2</option>
+                        </select>
+                    </div>
+                    <input type="submit">
+                </div>
+            </form>
+
+            <!-- Exam form -->
+            <form action="" id="exam-form" style="display:none">
+                <div class="form-field">
+                    <div class="label">Start time</div>
+                    <input type="datetime-local" id="examStartTime" name="startTime">
+                </div>
+
+
+                <div class="form-field">
+                    <!-- <label for="endTime">End Time</label> -->
+                    <div class="label">End Time</div>
+                    <input type="datetime-local" id="examEndTime" name="endTime">
+                </div>
+
+                <div class="form-field">
+                    <div class="label">Instructor:</div>
+                    <div class="input size50">
+                        <select id="examInstructor" class="styled">
+                            <option selected>Select instructor</option>
+                            <option>Rubén Velázquez</option>
+                            <option>Tomás Losa</option>
+                            <option>Jaime Martín</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-field">
+                    <div class="label">Student:</div>
+                    <div class="input size50">
+                        <select id="student" class="styled">
+                            <option selected>Select student</option>
+                            <option>Marcos Lin</option>
+                            <option>David Verdeguer</option>
+                            <option>Ahmed al-Kindi</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-field">
+                    <div class="label">Subject:</div>
+                    <div class="input size50">
+                        <select id="examSubject" class="styled">
+                            <option selected>Select subject</option>
+                            <option>Meteorology</option>
+                            <option>Principles of flight</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-field">
+                    <div class="label">Room:</div>
+                    <div class="input size50">
+                        <select id="room" class="styled">
+                            <option selected>Select room</option>
+                            <option>Room 1</option>
+                            <option>Room 2</option>
+                        </select>
+                    </div>
+                    <input type="submit">
+                </div>
+            </form>
+        </div>
+    </div>
+    <div id="container">
+        <div id="calendar">
+            <div id="calendar-header">
+                <div id="month" class="no-select">
+                    <!-- May -->
+                </div>
+                <div id="year" class="no-select">
+                    <!-- 2020 -->
+                </div>
+                <div id="new-event" class="just-no-select">+</div>
+            </div>
+            <div id="calendar-days">
+                <div id="weekdays" class="weekdays">
+                </div>
+                <div id="days" class="days">
+                </div>
+            </div>
+        </div>
+        <div id="footer"></div>
     </div>
     <script src="/socket.io/socket.io.js"></script>
     <script src="main.js"></script>

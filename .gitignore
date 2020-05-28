@@ -1,1 +1,4 @@
 node_modules
+react-test
+public/dist
+public/src/style_tailwind.css
