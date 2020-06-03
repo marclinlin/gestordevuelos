@@ -56,8 +56,14 @@ io.on('connection', socket => {
     console.log('New connection')
 
     const sendEvents = async () => {
-        const events = await Event.find()
-        console.log(events)
+        // get client date and first day of the week
+        const output = calendarDaysMonth(clientDate,weekStartDay)
+        const events = await Event.find(
+            {startTime: {
+                $gte:output.firsDayDate,
+                $lt: output.lastDayDate
+            }}
+            )
         socket.emit('update_events', events)
         socket.emit('message', 'Events received from the server')
     }
@@ -81,6 +87,7 @@ io.on('connection', socket => {
             event.instructor = input.instructor
             event.student = input.student
             event.aircraft = input.aircraft
+            //const occupied = [input.startTime,input.endTime]
             event.save()
             socket.emit('message', 'The event was saved to the DB')
         } else if (input.type === 'class') {
@@ -108,6 +115,7 @@ io.on('connection', socket => {
 
     socket.on('available_instructors', async () => {
         const instructors = await User.find({ typeOfUser: 'instructor' })
+        //checkAvailavility(event.startTime, event.endTime, instructors.availability)
         socket.emit('available_instructors', instructors)
     })
 
@@ -117,13 +125,13 @@ io.on('connection', socket => {
     })
 
 
-    function checkAvailavility(startDate, endDate, eventDates) {
-
-        eventDates.map(element => {
+    
+    function checkAvailavility(startTime, endTime, eventTimes) {
+        eventTimes.map(element => {
             console.log(element)
-            if ((startDate > element[0] && startDate < element[1]) ||
-                (endDate > element[0] && endDate < element[1]) ||
-                (startDate < element[0] && endDate > element[1])) {
+            if((startTime > element[0] && startTime < element[1] )||
+            (endTime > element[0] && endTime < element[1] )||
+            (startTime < element[0] && endTime > element[1])){
                 console.log('not available')
             }
 

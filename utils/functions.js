@@ -4,7 +4,8 @@
 function calendarDaysMonth(clientDate, weekStartingDay) {
     const currentYear = clientDate.getFullYear()
     const currentMonth = clientDate.getMonth()
-    const currentDay = clientDate.getDate();
+    const currentDay = clientDate.getDate()
+    const output = {};
 
     const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
     const monthDaysNumber = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
@@ -66,7 +67,27 @@ function calendarDaysMonth(clientDate, weekStartingDay) {
         days.splice(28, 41)
     }
 
-    const output = {}
+
+// date of the first and last day of the days array
+
+if (days[0] === 1 ) {
+    const firstDayDate = new Date(currentYear, currentMonth, days[0])
+    output.firsDayDate = firstDayDate
+    } else { 
+        const firstDayDate = new Date(currentYear, currentMonth-1, days[0])
+        output.firsDayDate = firstDayDate
+
+    }
+    if (days[days.length-1] < 15) {
+        const lastDayDate = new Date(currentYear,currentMonth+1,days[days.length-1])
+        output.lastDayDate = lastDayDate
+
+    } else {
+        const lastDayDate = new Date(currentYear,currentMonth+1,days[days.length-1])
+        output.lastDayDate = lastDayDate
+
+    }    
+    
     output.currentYear = currentYear
     output.currentMonth = currentMonthName
     output.currentDay = currentDay
