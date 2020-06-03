@@ -113,6 +113,21 @@ io.on('connection', socket => {
     })
 
 
+    function checkAvailavility(startDate, endDate, eventDates) {
+
+        eventDates.map(element => {
+            console.log(element)
+            if((startDate > element[0] && startDate < element[1] )||
+            (endDate > element[0] && endDate < element[1] )||
+            (startDate < element[0] && endDate>element[1])){
+                console.log('not available')
+            }
+            
+        });
+    
+    }
+
+
     // update a event
     // let { id } = ; // insert ID
     // event.title = 'asda'
