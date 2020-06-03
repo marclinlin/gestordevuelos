@@ -14,6 +14,10 @@ const server = http.createServer(app)
 const io = socketio(server)
 require('./database')
 
+// Routes
+const users = require('./routes/users')
+app.use('/users', users)
+
 // Settings
 app.set('port', process.env.PORT || 3000)
 
@@ -47,9 +51,6 @@ server.listen(app.get('port'), () => {
 // console.log(instructors)
 // }
 // findinstructors()
-
-const users = require('./routes/users')
-app.use('/users', users)
 
 io.on('connection', socket => {
     console.log('New connection')
@@ -116,14 +117,29 @@ io.on('connection', socket => {
     })
 
 
-    // update an event
+    function checkAvailavility(startDate, endDate, eventDates) {
+
+        eventDates.map(element => {
+            console.log(element)
+            if ((startDate > element[0] && startDate < element[1]) ||
+                (endDate > element[0] && endDate < element[1]) ||
+                (startDate < element[0] && endDate > element[1])) {
+                console.log('not available')
+            }
+
+        });
+
+    }
+
+
+    // update a event
     // let { id } = ; // insert ID
     // event.title = 'asda'
     // event.description = 'tora'
     // event.status = true
     // Event.update({_id: id});
 
-    // delete an event
+    // delete event
     // let { id } =  // gather ID
     // await Task.remove({_id: id}); //
 

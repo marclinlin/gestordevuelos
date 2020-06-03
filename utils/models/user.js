@@ -5,7 +5,8 @@ const UserSchema = Schema ({
     typeOfUser: String,
     age: Number,
     firstName: String,
-    lastName: String,  
+    lastName: String,
+    availability: Array, 
   })
   
   
