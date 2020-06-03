@@ -45,7 +45,7 @@ body {
 }
 
 #container {
-    height: 100%;
+    height: calc(100% - 60px);
     text-align: center;
     box-sizing: border-box;
 }
@@ -57,6 +57,49 @@ body {
     height: 90%;
     display: inline-block;
     border-radius: 10px;
+}
+
+.users {
+    margin-top: 2rem;
+    box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+    width: 90%;
+    height: 90%;
+    display: inline-block;
+    border-radius: 10px;
+}
+
+.users-content {
+    overflow-y: scroll;
+    padding-top: 10px;
+}
+
+.users-header {
+    display: flex;
+    height: 30px;
+    background-color: lightslategray;
+    color: white;
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+}
+
+.users-header > div {
+    width: 25%;
+    position: relative;
+}
+
+.users-header > div > span {
+    position: absolute;
+    top: 2px;
+}
+
+.user {
+    display: flex;
+    border: 1px solid black;
+    margin-top: -1px;
+}
+
+.user > div {
+    width: 25%
 }
 
 #calendar-header {
@@ -157,6 +200,10 @@ ul {list-style-type: none;}
     color: white;
 }
 
+.days > div.today > div {
+    color: rgba(81, 86, 93);
+}
+
 .days div.previous-next {
     color: lightgray;
     background-image: url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23f9f9fa' fill-opacity='1' fill-rule='evenodd'%3E%3Cpath d='M0 40L40 0H20L0 20M40 40V20L20 40'/%3E%3C/g%3E%3C/svg%3E");
@@ -208,12 +255,42 @@ ul {list-style-type: none;}
           -ms-user-select: none; /* Internet Explorer/Edge */
               user-select: none; /* Non-prefixed version, currently
                                     supported by Chrome, Edge, Opera and Firefox */
-  }
+}
 
-  .just-no-select {
+.just-no-select {
               user-select: none; /* Non-prefixed version, currently
-                                    supported by Chrome, Edge, Opera and Firefox */
-  }
+              supported by Chrome, Edge, Opera and Firefox */
+}
+
+.navbar {
+    height: 60px;
+    width: 100%;
+    display: flex;
+    background-color: lightslategray;
+    padding-left: 30px;
+    box-sizing: border-box;
+}
+
+.navbar > a {
+    text-align: center;
+    height: calc(100%);
+    width: 120px;
+    position: relative;
+}
+
+.navbar > a > span {
+    text-decoration: none;
+    color: whitesmoke;
+    font-weight: 600;
+    position: absolute;
+    top: 17px;
+    left: 35px;
+}
+
+.navbar > a:hover {
+    background-color: rgb(141, 157, 173);
+}
+
 
 .event {
       margin-bottom: 0.2rem;
@@ -222,6 +299,8 @@ ul {list-style-type: none;}
       border-radius: 4px;
       float: left;
       font-weight: 600;
+      margin-right: 5px;
+      box-sizing: border-box;
   }
 
 .event.class {
@@ -261,6 +340,16 @@ ul {list-style-type: none;}
     border: 1px solid black;
     border-radius: 3px;
     position: relative;
+}
+
+.two-days {
+    width: 200%;
+    text-align: left;
+}
+
+.two-days-split {
+    width: 100%;
+    text-align: left;
 }
 
 .event-type > label > span {

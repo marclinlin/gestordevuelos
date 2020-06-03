@@ -1,12 +1,16 @@
 const socket = io.connect('http://localhost:3000/');
-
 socket.on('message', msg => { console.log(msg); })
+
+// INITIAL DATA
+const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
+const monthNamesShort = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
 
 // GET MONTH CALENDAR
 const calendarParams = {
     clientDate: new Date(),
     weekStartDay: 'Monday'
 }
+
 socket.emit('get_month_calendar', calendarParams);
 socket.on('month_calendar', input => {
     const currentYear = input.currentYear;
@@ -16,8 +20,9 @@ socket.on('month_calendar', input => {
     const nextMonth = input.nextMonth;
     const weekStartingDay = input.weekStartingDay;
     const days = input.days;
+    console.log(input);
 
-    const events = [
+    /* const events = [
         {
             day: 19,
             month: 'May',
@@ -73,7 +78,7 @@ socket.on('month_calendar', input => {
             subject: 'POF',
             instructor: 'Ignacio García'
         }
-    ]
+    ] */
 
 
     /* CREATE CALENDAR */
@@ -95,7 +100,7 @@ socket.on('month_calendar', input => {
     const daysElement = document.querySelector('div#days')
     let month = days[0] >= 23 ? previousMonth : currentMonth;
     for (const [index, dayNumber] of days.entries()) {
-        if (dayNumber === 1) {
+        if (dayNumber === 1 && !!days[index - 1]) {
             month = month === previousMonth ? currentMonth : nextMonth
         }
         const newDay = document.createElement('div');
@@ -147,34 +152,58 @@ socket.on('month_calendar', input => {
     function off() {
         document.getElementById('overlay').style.display = "none";
     }
+    addEventForms();
+})
 
+function renderEvents(events) {
     // Render events (hard-coded so far)
-    events.forEach(event => {
-        const day = event.day;
-        const month = event.month;
-        const type = event.type;
-        const startTime = `${event.startTimeHours}:${event.startTimeMinutes}`
-        // const endTime = `${event.endTimeHours}:${event.endTimeMinutes}`
-        const selectDay = document.getElementById(`${day}-${month}`);
+    loop1: for (const event of events) {
+        const type = event.typeOfEvent;
+        const startTime = new Date(event.startTime)
+        const endTime = new Date(event.endTime)
+        const startDay = startTime.getDate();
+        const startMonth = startTime.getMonth();
+        const endDay = endTime.getDate();
+        const endMonth = endTime.getMonth();
+        const selectDay = document.getElementById(`${startDay}-${monthNames[startMonth]}`);
+        const startHours = startTime.getHours() > 10 ? startTime.getHours() : `0${startTime.getHours()}`
+        const startMinutes = startTime.getMinutes() > 10 ? startTime.getMinutes() : `0${startTime.getMinutes()}`
         const newEvent = document.createElement('div')
-        newEvent.classList.add('event')
-        newEvent.classList.add(type)
-        newEvent.classList.add('no-select')
-        if (type === 'flight') {
-            newEvent.innerHTML = `${startTime}`
-        } else if (type === 'class' || type === 'exam') {
-            newEvent.innerHTML = `${startTime}`
+        if (!document.getElementById(`${endDay}-${endMonth}`)) {
+            continue loop1;
         }
+        if (startDay === endDay && startMonth === endMonth) {
+            newEvent.classList.add('event')
+            newEvent.classList.add(type)
+            newEvent.classList.add('no-select')
+            // selectDay.addEventListener('click', createEvent)
+        } else {
+            newEvent.classList.add('event')
+            newEvent.classList.add(type)
+            newEvent.classList.add('no-select')
+            if (selectDay.classList.contains('right')) {
+                /* const selectNextDay = document.getElementById(`${startDay + 1}-${monthNames[startMonth]}`);
+                newEvent.classList.add('two-days-split')
+                newEvent.innerHTML = `1`
+                const newEventDuplicate = JSON.parse(JSON.stringify(newEvent))
+                var duplicate = true;
+                selectNextDay.innerHTML = newEventDuplicate
+                console.log(selectNextDay); */
+            } else {
+                newEvent.classList.add('two-days')
+            }
+        }
+        newEvent.innerHTML = `${startHours}:${startMinutes}`
         selectDay.appendChild(newEvent)
-        // selectDay.addEventListener('click', createEvent)
-    })
-    createEvents();
-})
+        // const endTime = `${ event.endTimeHours }: ${ event.endTimeMinutes } `
+    }
+}
+
 socket.on('update_events', events => {
-
+    renderEvents(events)
 })
 
-function createEvents() {
+function addEventForms() {
     /* ADD EVENT FORMS */
     const radios = document.getElementsByName('type-radio');
     const flightForm = document.getElementById('flight-form');

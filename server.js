@@ -48,6 +48,9 @@ server.listen(app.get('port'), () => {
 // }
 // findinstructors()
 
+const users = require('./routes/users')
+app.use('/users', users)
+
 io.on('connection', socket => {
     console.log('New connection')
 
@@ -113,14 +116,14 @@ io.on('connection', socket => {
     })
 
 
-    // update a event
+    // update an event
     // let { id } = ; // insert ID
     // event.title = 'asda'
     // event.description = 'tora'
     // event.status = true
     // Event.update({_id: id});
 
-    // delete event
+    // delete an event
     // let { id } =  // gather ID
     // await Task.remove({_id: id}); //
 
