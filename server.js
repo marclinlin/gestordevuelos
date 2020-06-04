@@ -55,15 +55,18 @@ server.listen(app.get('port'), () => {
 io.on('connection', socket => {
     console.log('New connection')
 
-    const sendEvents = async () => {
+    const sendEvents = async (clientDate, weekStartDay) => {
         // get client date and first day of the week
-        const output = calendarDaysMonth(clientDate,weekStartDay)
+        const output = calendarDaysMonth(clientDate, weekStartDay)
         const events = await Event.find(
-            {startTime: {
-                $gte:output.firsDayDate,
-                $lt: output.lastDayDate
-            }}
-            )
+            {
+                startTime: {
+                    $gte: output.firsDayDate,
+                    $lt: output.lastDayDate
+                }
+            }
+        )
+        console.log(events);
         socket.emit('update_events', events)
         socket.emit('message', 'Events received from the server')
     }
@@ -74,7 +77,7 @@ io.on('connection', socket => {
         const output = calendarDaysMonth(clientDate, weekStartDay)
         socket.emit('month_calendar', output)
         console.log(`Month calendar sent`);
-        sendEvents();
+        sendEvents(clientDate, weekStartDay);
     })
 
     socket.on('new_event', async input => {
@@ -87,7 +90,7 @@ io.on('connection', socket => {
             event.instructor = input.instructor
             event.student = input.student
             event.aircraft = input.aircraft
-            event.save()
+            await event.save()
             socket.emit('message', 'The event was saved to the DB')
         } else if (input.type === 'class') {
             event.typeOfEvent = 'class'
@@ -97,7 +100,7 @@ io.on('connection', socket => {
             event.instructor = input.instructor
             event.student = input.student
             event.room = input.room
-            event.save()
+            await event.save()
             socket.emit('message', 'The event was saved to the DB')
         } else if (input.type === 'exam') {
             event.typeOfEvent = 'exam'
@@ -113,6 +116,8 @@ io.on('connection', socket => {
             // user.occupied = user.occupied.push(occupied)
             socket.emit('message', 'The event was saved to the DB')
         }
+        const clientDate = new Date(input.clientDate)
+        sendEvents(clientDate, input.weekStartDay);
     })
 
     socket.on('available_instructors', async () => {
@@ -134,7 +139,7 @@ io.on('connection', socket => {
     //Create user
     socket.on('new_user', async input => {
         const user = new User()
-        switch(input.role) {
+        switch (input.role) {
             case 'instructor':
                 user.typeOfUser = 'instructor'
                 break;
@@ -142,8 +147,8 @@ io.on('connection', socket => {
                 user.typeOfUser = 'student'
                 break;
             case 'student':
-            user.typeOfUser = 'student'
-            break;
+                user.typeOfUser = 'student'
+                break;
         }
         user.id = input.id
         // user.age = input.age
@@ -156,9 +161,9 @@ io.on('connection', socket => {
     })
 
     //Modify user
-    socket.on('modify_user',async input => {
+    socket.on('modify_user', async input => {
         const user = await User.findById(input._id)
-        switch(input.typeOfUser) {
+        switch (input.typeOfUser) {
             case 'instructor':
                 user.typeOfUser = 'instructor'
                 break;
@@ -166,8 +171,8 @@ io.on('connection', socket => {
                 user.typeOfUser = 'student'
                 break;
             case 'student':
-            user.typeOfUser = 'student'
-            break;
+                user.typeOfUser = 'student'
+                break;
         }
         user.age = input.age
         user.firstName = input.firstName
@@ -178,18 +183,18 @@ io.on('connection', socket => {
     })
 
     //Delete user
-    socket.on('delete_user', async input =>{
-        await users.remove({_id:input._id})
+    socket.on('delete_user', async input => {
+        await users.remove({ _id: input._id })
         socket.emit('message', 'User deleted')
         console.log('User deleted')
-    } )
-    
+    })
+
     function checkAvailavility(startTime, endTime, eventTimes) {
         eventTimes.map(element => {
             console.log(element)
-            if((startTime > element[0] && startTime < element[1] )||
-            (endTime > element[0] && endTime < element[1] )||
-            (startTime < element[0] && endTime > element[1])){
+            if ((startTime > element[0] && startTime < element[1]) ||
+                (endTime > element[0] && endTime < element[1]) ||
+                (startTime < element[0] && endTime > element[1])) {
                 console.log('not available')
             }
 

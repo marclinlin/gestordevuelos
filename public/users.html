@@ -12,10 +12,39 @@
     <div class="navbar">
         <a href="/"><span>EVENTS</span></a>
         <a href="/users/"><span>USERS</span></a>
+        <a href='#' class='new-user-button'><span>Add user</span></a>
+    </div>
+    <div id="new-user-overlay" style="display: none" class="new-user-form">
+        <span class="close-addUser no-select">X</span>
+        <form id="new-user-form">
+            <div class="form-field">
+                <div class="label">Id</div>
+                <input type="text" id="userId" name="userId" autocomplete="off">
+            </div>
+            <div class="form-field">
+                <div class="label">Name</div>
+                <input type="text" id="name" name="name" autocomplete="off">
+            </div>
+            <div class="form-field">
+                <div class="label">Role</div>
+                <select id="role">
+                    <option selected>Select role</option>
+                    <option>admin</option>
+                    <option>instructor</option>
+                    <option>student</option>
+                </select>
+            </div>
+            <div class="form-field">
+                <div class="label">Email</div>
+                <input type="text" id="email" name="email" autocomplete="off">
+            </div>
+            <input type="submit">
+        </form>
     </div>
     <div id="container">
         <div class="users">
             <div class="users-header">
+                <div class="userId"><span>Id</span></div>
                 <div><span>Name</span></div>
                 <div><span>Role</span></div>
                 <div><span>Email</span></div>

@@ -146,17 +146,18 @@ socket.on('month_calendar', input => {
             on();
         }
     })
-    function on() {
-        document.getElementById('overlay').style.display = "block";
-    }
-    function off() {
-        document.getElementById('overlay').style.display = "none";
-    }
     addEventForms();
 })
 
+function on() {
+    document.getElementById('overlay').style.display = "block";
+}
+function off() {
+    document.getElementById('overlay').style.display = "none";
+}
+
 function renderEvents(events) {
-    // Render events (hard-coded so far)
+    document.querySelectorAll('.event').forEach(event => { event.parentNode.removeChild(event) })
     loop1: for (const event of events) {
         const type = event.typeOfEvent;
         const startTime = new Date(event.startTime)
@@ -166,10 +167,10 @@ function renderEvents(events) {
         const endDay = endTime.getDate();
         const endMonth = endTime.getMonth();
         const selectDay = document.getElementById(`${startDay}-${monthNames[startMonth]}`);
-        const startHours = startTime.getHours() > 10 ? startTime.getHours() : `0${startTime.getHours()}`
-        const startMinutes = startTime.getMinutes() > 10 ? startTime.getMinutes() : `0${startTime.getMinutes()}`
+        const startHours = startTime.getHours() >= 10 ? startTime.getHours() : `0${startTime.getHours()}`
+        const startMinutes = startTime.getMinutes() >= 10 ? startTime.getMinutes() : `0${startTime.getMinutes()}`
         const newEvent = document.createElement('div')
-        if (!document.getElementById(`${endDay}-${endMonth}`)) {
+        if (!document.getElementById(`${endDay}-${monthNames[endMonth]}`)) {
             continue loop1;
         }
         if (startDay === endDay && startMonth === endMonth) {
@@ -201,6 +202,7 @@ function renderEvents(events) {
 
 socket.on('update_events', events => {
     renderEvents(events)
+    off();
 })
 
 function addEventForms() {
@@ -252,19 +254,24 @@ function addEventForms() {
     // Submit forms
     flightForm.addEventListener('submit', e => {
         e.preventDefault();
+        console.log(e.target.elements);
         const startTime = e.target.elements.flightStartTime.value
         const endTime = e.target.elements.flightEndTime.value
         const instructor = e.target.elements.flightInstructor.value
-        const student = e.target.elements.student.value
+        const student = e.target.elements.flightStudent.value
         const aircraft = e.target.elements.aircraft.value
+
+        calendarParams.clientDate = new Date()
 
         const output = {
             type: 'flight',
-            startTime: startTime,
-            endTime: endTime,
-            instructor: instructor,
-            student: student,
-            aircraft: aircraft,
+            startTime,
+            endTime,
+            instructor,
+            student,
+            aircraft,
+            clientDate: calendarParams.clientDate,
+            weekStartDay: calendarParams.weekStartDay
         }
         socket.emit('new_event', output)
     })
@@ -274,17 +281,21 @@ function addEventForms() {
         const endTime = e.target.elements.classEndTime.value
         const subject = e.target.elements.classSubject.value
         const instructor = e.target.elements.classInstructor.value
-        const student = e.target.elements.student.value
-        const room = e.target.elements.room.value
+        const student = e.target.elements.classStudent.value
+        const room = e.target.elements.classRoom.value
+
+        calendarParams.clientDate = new Date()
 
         const output = {
             type: 'class',
-            startTime: startTime,
-            endTime: endTime,
-            subject: subject,
-            instructor: instructor,
-            student: student,
-            room: room,
+            startTime,
+            endTime,
+            subject,
+            instructor,
+            student,
+            room,
+            clientDate: calendarParams.clientDate,
+            weekStartDay: calendarParams.weekStartDay
         }
         socket.emit('new_event', output)
     })
@@ -294,17 +305,21 @@ function addEventForms() {
         const endTime = e.target.elements.examEndTime.value
         const subject = e.target.elements.examSubject.value
         const instructor = e.target.elements.examInstructor.value
-        const student = e.target.elements.student.value
-        const room = e.target.elements.room.value
+        const student = e.target.elements.examStudent.value
+        const room = e.target.elements.examRoom.value
+
+        calendarParams.clientDate = new Date()
 
         const output = {
             type: 'exam',
-            startTime: startTime,
-            endTime: endTime,
-            subject: subject,
-            instructor: instructor,
-            student: student,
-            room: room,
+            startTime,
+            endTime,
+            subject,
+            instructor,
+            student,
+            room,
+            clientDate: calendarParams.clientDate,
+            weekStartDay: calendarParams.weekStartDay
         }
         socket.emit('new_event', output)
     })
