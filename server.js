@@ -77,7 +77,7 @@ io.on('connection', socket => {
         sendEvents();
     })
 
-    socket.on('new_event', input => {
+    socket.on('new_event', async input => {
         // Create a flight event
         const event = new Event()
         if (input.type === 'flight') {
@@ -87,7 +87,6 @@ io.on('connection', socket => {
             event.instructor = input.instructor
             event.student = input.student
             event.aircraft = input.aircraft
-            //const occupied = [input.startTime,input.endTime]
             event.save()
             socket.emit('message', 'The event was saved to the DB')
         } else if (input.type === 'class') {
@@ -108,7 +107,10 @@ io.on('connection', socket => {
             event.instructor = input.instructor
             event.student = input.student
             event.room = input.room
-            event.save()
+            await event.save()
+            // const occupied = [input.startTime,input.endTime]
+            // const user = await User.findById(input.instructorid)
+            // user.occupied = user.occupied.push(occupied)
             socket.emit('message', 'The event was saved to the DB')
         }
     })
@@ -117,14 +119,68 @@ io.on('connection', socket => {
         const instructors = await User.find({ typeOfUser: 'instructor' })
         //checkAvailavility(event.startTime, event.endTime, instructors.availability)
         socket.emit('available_instructors', instructors)
+        socket.emit('message', 'Sending available instructors')
+        console.log('Sending available instructors')
+
     })
 
     socket.on('available_students', async () => {
         const students = await User.find({ typeOfUser: 'student' })
         socket.emit('available_students', students)
+        socket.emit('message', 'Sending available students')
+        console.log('Sending available students')
     })
 
+    //Create user
+    socket.on('new_user', async input => {
+        const user = new User()
+        switch(input.typeOfUser) {
+            case 'instructor':
+                user.typeOfUser = 'instructor'
+                break;
+            case 'student':
+                user.typeOfUser = 'student'
+                break;
+            case 'student':
+            user.typeOfUser = 'student'
+            break;
+        }
+        user.age = input.age
+        user.firstName = input.firstName
+        user.lastName = input.lastName
+        await users.save()
+        socket.emit('message', 'User created')
+        console.log('User created')
+    })
 
+    //Modify user
+    socket.on('modify_user',async input => {
+        const user = await User.findById(input._id)
+        switch(input.typeOfUser) {
+            case 'instructor':
+                user.typeOfUser = 'instructor'
+                break;
+            case 'student':
+                user.typeOfUser = 'student'
+                break;
+            case 'student':
+            user.typeOfUser = 'student'
+            break;
+        }
+        user.age = input.age
+        user.firstName = input.firstName
+        user.lastName = input.lastName
+        await users.save()
+        socket.emit('message', 'User updated')
+        console.log('User updated')
+    })
+
+    //Delete user
+    socket.on('delete_user', async input =>{
+        await users.remove({_id:input._id})
+        socket.emit('message', 'User deleted')
+        console.log('User deleted')
+    } )
     
     function checkAvailavility(startTime, endTime, eventTimes) {
         eventTimes.map(element => {
