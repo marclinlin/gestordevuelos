@@ -134,7 +134,7 @@ io.on('connection', socket => {
     //Create user
     socket.on('new_user', async input => {
         const user = new User()
-        switch(input.typeOfUser) {
+        switch(input.role) {
             case 'instructor':
                 user.typeOfUser = 'instructor'
                 break;
@@ -145,9 +145,11 @@ io.on('connection', socket => {
             user.typeOfUser = 'student'
             break;
         }
-        user.age = input.age
-        user.firstName = input.firstName
-        user.lastName = input.lastName
+        user.id = input.id
+        // user.age = input.age
+        user.firstName = input.name
+        // user.lastName = input.lastName
+
         await users.save()
         socket.emit('message', 'User created')
         console.log('User created')
