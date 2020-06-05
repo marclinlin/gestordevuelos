@@ -37,7 +37,7 @@ server.listen(app.get('port'), () => {
 
 
 // const event = new Event()
-// event.typeOfEvent = 'class'
+// event.type = 'class'
 // event.startTime = new Date
 // event.endTime = new Date
 // event.subject = 'Perf'
@@ -47,7 +47,7 @@ server.listen(app.get('port'), () => {
 // event.save()
 
 // async function findinstructors() {
-// const instructors = await User.find({typeOfUser:'instructor'})
+// const instructors = await User.find({role:'instructor'})
 // console.log(instructors)
 // }
 // findinstructors()
@@ -84,7 +84,7 @@ io.on('connection', socket => {
         // Create a flight event
         const event = new Event()
         if (input.type === 'flight') {
-            event.typeOfEvent = 'flight'
+            event.type = 'flight'
             event.startTime = input.startTime
             event.endTime = input.endTime
             event.instructor = input.instructor
@@ -93,7 +93,7 @@ io.on('connection', socket => {
             await event.save()
             socket.emit('message', 'The event was saved to the DB')
         } else if (input.type === 'class') {
-            event.typeOfEvent = 'class'
+            event.type = 'class'
             event.startTime = input.startTime
             event.endTime = input.endTime
             event.subject = input.subject
@@ -103,7 +103,7 @@ io.on('connection', socket => {
             await event.save()
             socket.emit('message', 'The event was saved to the DB')
         } else if (input.type === 'exam') {
-            event.typeOfEvent = 'exam'
+            event.type = 'exam'
             event.startTime = input.startTime
             event.endTime = input.endTime
             event.subject = input.subject
@@ -121,72 +121,65 @@ io.on('connection', socket => {
     })
 
     socket.on('available_instructors', async () => {
-        const instructors = await User.find({ typeOfUser: 'instructor' })
+        const instructors = await User.find({ role: 'instructor' })
         //checkAvailavility(event.startTime, event.endTime, instructors.availability)
         socket.emit('available_instructors', instructors)
-        socket.emit('message', 'Sending available instructors')
+        socket.emit('message', 'Received available instructors')
         console.log('Sending available instructors')
-
     })
 
     socket.on('available_students', async () => {
-        const students = await User.find({ typeOfUser: 'student' })
+        const students = await User.find({ role: 'student' })
         socket.emit('available_students', students)
-        socket.emit('message', 'Sending available students')
+        socket.emit('message', 'Received available students')
         console.log('Sending available students')
     })
+
+    const sendUsers = async function () {
+        const users = await User.find()
+        socket.emit('user_list', users)
+        socket.emit('message', 'Received users')
+        console.log('Sending users')
+    }
+
+    socket.on('get_users', sendUsers)
 
     //Create user
     socket.on('new_user', async input => {
         const user = new User()
-        switch (input.role) {
-            case 'instructor':
-                user.typeOfUser = 'instructor'
-                break;
-            case 'student':
-                user.typeOfUser = 'student'
-                break;
-            case 'student':
-                user.typeOfUser = 'student'
-                break;
-        }
+        user.role = input.role
         user.id = input.id
         // user.age = input.age
-        user.firstName = input.name
+        user.name = input.name
+        // user.firstName = input.name
         // user.lastName = input.lastName
-
-        await users.save()
-        socket.emit('message', 'User created')
-        console.log('User created')
+        user.email = input.email
+        await user.save()
+        socket.emit('message', 'User saved to the DB')
+        console.log('User saved to the DB')
+        console.log(user);
+        sendUsers();
     })
 
-    //Modify user
-    socket.on('modify_user', async input => {
+    //Edit user
+    socket.on('edit_user', async input => {
         const user = await User.findById(input._id)
-        switch (input.typeOfUser) {
-            case 'instructor':
-                user.typeOfUser = 'instructor'
-                break;
-            case 'student':
-                user.typeOfUser = 'student'
-                break;
-            case 'student':
-                user.typeOfUser = 'student'
-                break;
-        }
+        user.id = input.id
+        user.role = input.role
         user.age = input.age
         user.firstName = input.firstName
         user.lastName = input.lastName
-        await users.save()
-        socket.emit('message', 'User updated')
-        console.log('User updated')
+        await user.save()
+        socket.emit('message', `User ${input.id} updated`)
+        console.log(`User ${input.id} (${input._id}) updated`)
     })
 
     //Delete user
     socket.on('delete_user', async input => {
-        await users.remove({ _id: input._id })
-        socket.emit('message', 'User deleted')
-        console.log('User deleted')
+        await User.remove({ _id: input._id })
+        socket.emit('message', `User ${input.id} deleted`)
+        console.log(`User ${input.id} (${input._id}) deleted`)
+        sendUsers();
     })
 
     function checkAvailavility(startTime, endTime, eventTimes) {

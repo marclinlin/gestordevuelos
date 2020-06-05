@@ -1,4 +1,5 @@
 const socket = io.connect('http://localhost:3000/');
+socket.on('message', msg => { console.log(msg); })
 
 const monthNamesShort = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
 
@@ -258,7 +259,8 @@ let users = [
 ]
 
 function editUser() {
-    let id = this;
+    let id = this.id;
+    let _id = this._id;
     document.getElementById(id).querySelectorAll('div').forEach(field => {
         function saveUserFunction() {
             const outputUser = {}
@@ -266,7 +268,11 @@ function editUser() {
                 field.firstElementChild.setAttribute('contenteditable', false)
                 const className = field.classList[0];
                 if (field.className !== 'manage-icons' && field.className !== 'last-connection' && field.className !== 'role') {
-                    outputUser[className] = field.firstElementChild.innerHTML
+                    if (field.className === 'id') {
+                        outputUser['id'] = field.firstElementChild.innerHTML
+                    } else {
+                        outputUser[className] = field.firstElementChild.innerHTML
+                    }
                 } else if (field.className === 'role') {
                     const newRole = field.firstElementChild.elements.role.value
                     outputUser['role'] = newRole
@@ -283,7 +289,8 @@ function editUser() {
             const currentSeparator = document.getElementById(id).querySelector('.manage-icons').querySelectorAll('span')[0]
             field.insertBefore(editUserButton, currentSeparator)
             field.querySelector('.edit-user').addEventListener('click', editUser.bind(id));
-            socket.emit('save-user', outputUser)
+            outputUser['_id'] = _id
+            socket.emit('edit_user', outputUser)
             console.log(`Saving user ${id}:`);
             console.log(outputUser);
         }
@@ -343,41 +350,13 @@ function editUser() {
             }
         }
     })
-    socket.emit('edit-user', id)
     console.log(`Editing user ${id}`);
 }
 
 function deleteUser() {
-    socket.emit('delete-user', this)
-    console.log(`Deleting user ${this}`);
+    socket.emit('delete_user', this)
+    console.log(`Deleting user ${this.id}`);
 }
-
-function renderUsers(users) {
-    const usersContainer = document.querySelector('div.users-content')
-    usersContainer.querySelectorAll('div.user').forEach(user => { user.parentNode.removeChild(user) })
-    users.forEach(user => {
-        const newUser = document.createElement('div')
-        newUser.classList.add('user')
-        newUser.setAttribute('id', user.id)
-        const date = `${user.lastConnection.getDate()} ${monthNamesShort[user.lastConnection.getMonth()]} ${user.lastConnection.getHours()}:${user.lastConnection.getMinutes()}`
-        newUser.innerHTML = `<div class="userId"><span>${user.id}</span></div>
-        <div class="name"><span>${user.name}</span></div>
-        <div class="role"><span>${user.role}</span></div>
-        <div class="email"><span>${user.email}</span></div>
-        <div class="last-connection"><span>${date}</span></div>
-        <div class="manage-icons"><a href="#" class="edit-user">Edit</a><span> | </span><a href="#" class="delete-user">Delete</a></div>
-        `;
-        usersContainer.appendChild(newUser)
-        const currentUser = document.getElementById(user.id)
-        const manageCurrentUser = currentUser.querySelector('.manage-icons')
-        const editCurrentUser = manageCurrentUser.querySelector('.edit-user')
-        const deleteCurrentUser = manageCurrentUser.querySelector('.delete-user')
-        editCurrentUser.addEventListener('click', editUser.bind(user.id))
-        deleteCurrentUser.addEventListener('click', deleteUser.bind(user.id))
-    });
-}
-
-renderUsers(users)
 
 socket.emit('get_users')
 socket.on('users_list', input => {
@@ -385,30 +364,30 @@ socket.on('users_list', input => {
     renderUsers(users)
 })
 
-function addUser() {
+function openAddUser() {
     document.getElementById('new-user-overlay').style.display = 'block'
-    addUserButton.removeEventListener('click', addUser)
+    addUserButton.removeEventListener('click', openAddUser)
 }
 
 function closeAddUser() {
     document.getElementById('new-user-overlay').style.display = 'none'
-    addUserButton.addEventListener('click', addUser)
+    addUserButton.addEventListener('click', openAddUser)
 }
 
 const addUserButton = document.querySelector('.new-user-button')
-addUserButton.addEventListener('click', addUser)
+addUserButton.addEventListener('click', openAddUser)
 
 const addUserForm = document.getElementById('new-user-form').addEventListener('submit', e => {
     e.preventDefault();
     console.log(e.target.elements);
 
-    const userId = e.target.elements.userId.value
+    const id = e.target.elements.id.value
     const name = e.target.elements.name.value
     const role = e.target.elements.role.value
     const email = e.target.elements.email.value
 
     const output = {
-        id: userId,
+        id,
         name,
         role,
         email
@@ -419,3 +398,52 @@ const addUserForm = document.getElementById('new-user-form').addEventListener('s
 
 const closeAddUserButton = document.querySelector('.close-addUser')
 closeAddUserButton.addEventListener('click', closeAddUser)
+
+socket.emit('get_users')
+socket.on('user_list', users => {
+    renderUsers(users);
+})
+
+function renderUsers(users) {
+    const usersContainer = document.querySelector('div.users-content')
+    usersContainer.querySelectorAll('div.user').forEach(user => { user.parentNode.removeChild(user) })
+    users.forEach(user => {
+        const newUser = document.createElement('div')
+        newUser.classList.add('user')
+        newUser.setAttribute('id', user.id)
+        newUser.setAttribute('data-_id', user._id)
+        let date = undefined;
+        if (!!user.lastConnection) {
+            date = `${user.lastConnection.getDate()} ${monthNamesShort[user.lastConnection.getMonth()]} ${user.lastConnection.getHours()}:${user.lastConnection.getMinutes()}`
+            newUser.innerHTML = `<div class="id"><span>${user.id}</span></div>
+            <div class="name"><span>${user.name}</span></div>
+            <div class="role"><span>${user.role}</span></div>
+            <div class="email"><span>${user.email}</span></div>
+            <div class="last-connection"><span>${date}</span></div>
+            <div class="manage-icons"><a href="#" class="edit-user">Edit</a><span> | </span><a href="#" class="delete-user">Delete</a></div>
+            `;
+        } else {
+            newUser.innerHTML = `<div class="id"><span>${user.id}</span></div>
+            <div class="name"><span>${user.name}</span></div>
+            <div class="role"><span>${user.role}</span></div>
+            <div class="email"><span>${user.email}</span></div>
+            <div class="last-connection"><span>Never</span></div>
+            <div class="manage-icons"><a href="#" class="edit-user">Edit</a><span> | </span><a href="#" class="delete-user">Delete</a></div>
+            `;
+        }
+        usersContainer.appendChild(newUser)
+        const currentUser = document.getElementById(user.id)
+        const manageCurrentUser = currentUser.querySelector('.manage-icons')
+        const editCurrentUser = manageCurrentUser.querySelector('.edit-user')
+        const deleteCurrentUser = manageCurrentUser.querySelector('.delete-user')
+        const bindedObject = {
+            _id: user._id,
+            id: user.id
+        }
+        editCurrentUser.addEventListener('click', editUser.bind(bindedObject))
+        deleteCurrentUser.addEventListener('click', deleteUser.bind(bindedObject))
+    });
+    closeAddUser();
+}
+
+renderUsers(users)
