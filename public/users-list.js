@@ -258,6 +258,40 @@ let users = [
     }
 ]
 
+// ADD USER
+function openAddUser() {
+    document.getElementById('new-user-overlay').style.display = 'block'
+    addUserButton.removeEventListener('click', openAddUser)
+}
+function closeAddUser() {
+    document.getElementById('new-user-overlay').style.display = 'none'
+    addUserButton.addEventListener('click', openAddUser)
+}
+const addUserButton = document.querySelector('.new-user-button')
+addUserButton.addEventListener('click', openAddUser)
+const addUserForm = document.getElementById('new-user-form')
+addUserForm.addEventListener('submit', e => {
+    e.preventDefault();
+    console.log(e.target.elements);
+
+    const id = e.target.elements.id.value
+    const name = e.target.elements.name.value
+    const role = e.target.elements.role.value
+    const email = e.target.elements.email.value
+
+    const output = {
+        id,
+        name,
+        role,
+        email
+    }
+    console.log(output);
+    socket.emit('new_user', output)
+})
+const closeAddUserButton = document.querySelector('.close-addUser')
+closeAddUserButton.addEventListener('click', closeAddUser)
+
+// EDIT/DELETE USER
 function editUser() {
     let id = this.id;
     let _id = this._id;
@@ -352,58 +386,17 @@ function editUser() {
     })
     console.log(`Editing user ${id}`);
 }
-
 function deleteUser() {
     socket.emit('delete_user', this)
     console.log(`Deleting user ${this.id}`);
 }
 
+// INIT PAGE
 socket.emit('get_users')
 socket.on('users_list', input => {
     users = input;
     renderUsers(users)
 })
-
-function openAddUser() {
-    document.getElementById('new-user-overlay').style.display = 'block'
-    addUserButton.removeEventListener('click', openAddUser)
-}
-
-function closeAddUser() {
-    document.getElementById('new-user-overlay').style.display = 'none'
-    addUserButton.addEventListener('click', openAddUser)
-}
-
-const addUserButton = document.querySelector('.new-user-button')
-addUserButton.addEventListener('click', openAddUser)
-
-const addUserForm = document.getElementById('new-user-form').addEventListener('submit', e => {
-    e.preventDefault();
-    console.log(e.target.elements);
-
-    const id = e.target.elements.id.value
-    const name = e.target.elements.name.value
-    const role = e.target.elements.role.value
-    const email = e.target.elements.email.value
-
-    const output = {
-        id,
-        name,
-        role,
-        email
-    }
-    console.log(output);
-    socket.emit('new_user', output)
-})
-
-const closeAddUserButton = document.querySelector('.close-addUser')
-closeAddUserButton.addEventListener('click', closeAddUser)
-
-socket.emit('get_users')
-socket.on('user_list', users => {
-    renderUsers(users);
-})
-
 function renderUsers(users) {
     const usersContainer = document.querySelector('div.users-content')
     usersContainer.querySelectorAll('div.user').forEach(user => { user.parentNode.removeChild(user) })
@@ -445,5 +438,4 @@ function renderUsers(users) {
     });
     closeAddUser();
 }
-
 renderUsers(users)

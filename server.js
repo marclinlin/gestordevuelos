@@ -83,69 +83,65 @@ io.on('connection', socket => {
     socket.on('new_event', async input => {
         // Create a flight event
         const event = new Event()
+        event.type = input.type
+        event.startTime = input.startTime
+        event.endTime = input.endTime
         if (input.type === 'flight') {
-            event.type = 'flight'
-            event.startTime = input.startTime
-            event.endTime = input.endTime
             event.instructor = input.instructor
             event.student = input.student
             event.aircraft = input.aircraft
             await event.save()
             socket.emit('message', 'The event was saved to the DB')
-        } else if (input.type === 'class') {
-            event.type = 'class'
-            event.startTime = input.startTime
-            event.endTime = input.endTime
-            event.subject = input.subject
+        } else if (input.type === 'class' || input.type === 'exam') {
             event.instructor = input.instructor
             event.student = input.student
-            event.room = input.room
-            await event.save()
-            socket.emit('message', 'The event was saved to the DB')
-        } else if (input.type === 'exam') {
-            event.type = 'exam'
-            event.startTime = input.startTime
-            event.endTime = input.endTime
             event.subject = input.subject
-            event.instructor = input.instructor
-            event.student = input.student
             event.room = input.room
             await event.save()
             // const occupied = [input.startTime,input.endTime]
             // const user = await User.findById(input.instructorid)
             // user.occupied = user.occupied.push(occupied)
             socket.emit('message', 'The event was saved to the DB')
+        } else if (input.type === 'notAvailable') {
+            event.asset = input.asset;
+            await event.save()
+            socket.emit('message', 'The availability was saved to the DB')
         }
         const clientDate = new Date(input.clientDate)
         sendEvents(clientDate, input.weekStartDay);
     })
 
-    socket.on('available_instructors', async () => {
+
+
+
+    const sendInstructors = async function () {
         const instructors = await User.find({ role: 'instructor' })
         //checkAvailavility(event.startTime, event.endTime, instructors.availability)
-        socket.emit('available_instructors', instructors)
+        socket.emit('send_instructors', instructors)
         socket.emit('message', 'Received available instructors')
         console.log('Sending available instructors')
-    })
+    }
 
-    socket.on('available_students', async () => {
+    const sendStudents = async function () {
         const students = await User.find({ role: 'student' })
-        socket.emit('available_students', students)
+        socket.emit('send_students', students)
         socket.emit('message', 'Received available students')
         console.log('Sending available students')
-    })
+    }
 
     const sendUsers = async function () {
         const users = await User.find()
-        socket.emit('user_list', users)
+        socket.emit('users_list', users)
         socket.emit('message', 'Received users')
         console.log('Sending users')
     }
 
+    socket.on('get_instructors', sendInstructors)
+    socket.on('get_students', sendStudents)
     socket.on('get_users', sendUsers)
 
     //Create user
-    socket.on('new_user', async input => {
+    const addUser = async function (input) {
         const user = new User()
         user.role = input.role
         user.id = input.id
@@ -159,10 +155,11 @@ io.on('connection', socket => {
         console.log('User saved to the DB')
         console.log(user);
         sendUsers();
-    })
+    }
+    socket.on('new_user', input => { addUser(input) })
 
     //Edit user
-    socket.on('edit_user', async input => {
+    const editUser = async function (input) {
         const user = await User.findById(input._id)
         user.id = input.id
         user.role = input.role
@@ -172,7 +169,9 @@ io.on('connection', socket => {
         await user.save()
         socket.emit('message', `User ${input.id} updated`)
         console.log(`User ${input.id} (${input._id}) updated`)
-    })
+        sendUsers();
+    }
+    socket.on('edit_user', input => { editUser(input) })
 
     //Delete user
     socket.on('delete_user', async input => {
@@ -182,6 +181,7 @@ io.on('connection', socket => {
         sendUsers();
     })
 
+    // Check if an event can be added with the current restrictions
     function checkAvailavility(startTime, endTime, eventTimes) {
         eventTimes.map(element => {
             console.log(element)
@@ -190,25 +190,42 @@ io.on('connection', socket => {
                 (startTime < element[0] && endTime > element[1])) {
                 console.log('not available')
             }
-
         });
-
     }
 
 
-    // update a event
-    // let { id } = ; // insert ID
-    // event.title = 'asda'
-    // event.description = 'tora'
-    // event.status = true
-    // Event.update({_id: id});
-
-    // delete event
-    // let { id } =  // gather ID
-    // await Task.remove({_id: id}); //
-
-
-
+    //Edit event
+    const editEvent = async function (input) {
+        const event = await Event.findById(input._id)
+        console.log(event);
+        event.type = input.type
+        event.startTime = input.startTime
+        event.endTime = input.endTime
+        if (input.type === 'flight') {
+            event.instructor = input.instructor
+            event.student = input.student
+            event.aircraft = input.aircraft
+            await event.save()
+            socket.emit('message', `Event updated`)
+            console.log(`Event updated`)
+        } else if (input.type === 'class' || input.type === 'exam') {
+            event.instructor = input.instructor
+            event.student = input.student
+            event.subject = input.subject
+            event.room = input.room
+            await event.save()
+            socket.emit('message', `Event updated`)
+            console.log(`Event updated`)
+        } else if (input.type === 'notAvailable') {
+            event.asset = input.asset;
+            await event.save()
+            socket.emit('message', `Event updated`)
+            console.log(`Event updated`)
+        }
+        const clientDate = new Date(input.clientDate)
+        sendEvents(clientDate, input.weekStartDay);
+    }
+    socket.on('edit_event', input => { editEvent(input) })
 
 
 

@@ -141,25 +141,32 @@ socket.on('month_calendar', input => {
     // Add event button
     document.getElementById('new-event').addEventListener('click', () => {
         if (document.getElementById('overlay').style.display === 'block') {
-            off();
+            hideNewEvent();
         } else {
-            on();
+            hideAvailability();
+            showNewEvent();
         }
     })
     addEventForms();
+
+    // Availability button
+    document.getElementById('availability').addEventListener('click', () => {
+        if (document.getElementById('availability-overlay').style.display === 'block') {
+            hideAvailability();
+        } else {
+            hideNewEvent();
+            showAvailability();
+        }
+    })
 })
 
-function on() {
-    document.getElementById('overlay').style.display = "block";
-}
-function off() {
-    document.getElementById('overlay').style.display = "none";
-}
-
+let eventsList = [];
 function renderEvents(events) {
+    eventsList = events;
+    document.querySelectorAll('form[data-_id]').forEach(form => form.removeAttribute(`data-_id`))
     document.querySelectorAll('.event').forEach(event => { event.parentNode.removeChild(event) })
     loop1: for (const event of events) {
-        const type = event.typeOfEvent;
+        const type = event.type;
         const startTime = new Date(event.startTime)
         const endTime = new Date(event.endTime)
         const startDay = startTime.getDate();
@@ -169,7 +176,10 @@ function renderEvents(events) {
         const selectDay = document.getElementById(`${startDay}-${monthNames[startMonth]}`);
         const startHours = startTime.getHours() >= 10 ? startTime.getHours() : `0${startTime.getHours()}`
         const startMinutes = startTime.getMinutes() >= 10 ? startTime.getMinutes() : `0${startTime.getMinutes()}`
+        const endHours = endTime.getHours() >= 10 ? endTime.getHours() : `0${endTime.getHours()}`
+        const endMinutes = endTime.getMinutes() >= 10 ? endTime.getMinutes() : `0${endTime.getMinutes()}`
         const newEvent = document.createElement('div')
+        newEvent.setAttribute('data-_id', event._id)
         if (!document.getElementById(`${endDay}-${monthNames[endMonth]}`)) {
             continue loop1;
         }
@@ -191,20 +201,36 @@ function renderEvents(events) {
                 selectNextDay.innerHTML = newEventDuplicate
                 console.log(selectNextDay); */
             } else {
-                newEvent.classList.add('two-days')
+                // newEvent.classList.add('two-days')
             }
         }
-        newEvent.innerHTML = `${startHours}:${startMinutes}`
+        if (newEvent.classList.contains('notAvailable')) {
+            newEvent.innerHTML = `${startHours}:${startMinutes} - ${endHours}:${endMinutes}: ${event.asset}`
+        } else {
+            newEvent.innerHTML = `${startHours}:${startMinutes}`
+        }
+
         selectDay.appendChild(newEvent)
         // const endTime = `${ event.endTimeHours }: ${ event.endTimeMinutes } `
+        const currentEvent = document.querySelector(`[data-_id="${event._id}"]`);
+        // console.log(currentEvent);
+        currentEvent.addEventListener('click', toggleEditEventOverlay.bind(event._id))
     }
 }
-
 socket.on('update_events', events => {
+    hideNewEvent();
+    hideAvailability();
+    hideEditEventOverlay();
     renderEvents(events)
-    off();
 })
 
+// NEW EVENT FORM
+function showNewEvent() {
+    document.getElementById('overlay').style.display = "block";
+}
+function hideNewEvent() {
+    document.getElementById('overlay').style.display = "none";
+}
 function addEventForms() {
     /* ADD EVENT FORMS */
     const radios = document.getElementsByName('type-radio');
@@ -375,3 +401,216 @@ function addEventForms() {
     }) */
 
 }
+
+// EDIT EVENTS FORMS
+function showEditEventOverlay(_id) {
+    _id = String(_id)
+    // AUTO FILL FIELDS WITH EVENT DATA:
+    loop1: for (const event of eventsList) {
+        if (event._id === _id) {
+            document.getElementById('edit-event-overlay').style.display = "block";
+            const type = event.type === 'notAvailable' ? 'availability' : event.type
+            const form = document.getElementById(`edit-${type}-form`)
+            document.getElementById('edit-event-overlay').querySelectorAll('form').forEach(form => {
+                if (form.getAttribute('id') === `edit-${type}-form`) {
+                    form.style.display = "block";
+                    form.setAttribute('data-_id', _id)
+                } else {
+                    form.style.display = "none";
+                }
+            })
+            const startDate = new Date(event.startTime)
+            const endDate = new Date(event.endTime)
+            /* const startYear = new Date(event.startTime).getFullYear();
+            let startMonth = new Date(event.startTime).getMonth();
+            let startDay = new Date(event.startTime).getDate();
+            const endYear = new Date(event.endTime).getFullYear();
+            let endMonth = new Date(event.endTime).getMonth();
+            let endDay = new Date(event.endTime).getDate(); */
+            /* if (startMonth < 10) {
+                startMonth = `0${startMonth}`
+            }
+            if (startDay < 10) {
+                startDay = `0${startDay}`
+            }
+            if (endMonth < 10) {
+                endMonth = `0${endMonth}`
+            }
+            if (endDay < 10) {
+                endDay = `0${endDay}`
+            } */
+
+            const timeZoneOffset = startDate.getTimezoneOffset() * 60000; //offset in milliseconds
+            const localISOStartTime = (new Date(startDate - timeZoneOffset)).toISOString().substring(0, 19);
+            const localISOEndTime = (new Date(startDate - timeZoneOffset)).toISOString().substring(0, 19);
+            // console.log(localISOStartTime);
+            // console.log(localISOEndTime);
+            form.querySelector(`#${type}StartTime`).setAttribute('value', localISOStartTime)
+            form.querySelector(`#${type}EndTime`).setAttribute('value', localISOEndTime)
+            form.querySelectorAll('option').forEach(option => {
+                option.removeAttribute('selected')
+            })
+            if (type === 'availability') {
+                form.querySelector(`#asset`).querySelectorAll('option').forEach(option => {
+                    if (option.innerHTML === event.asset) {
+                        option.setAttribute('selected', "")
+                    }
+                })
+            } else if (type === 'flight') {
+                form.querySelector(`#flightInstructor`).querySelectorAll('option').forEach(option => {
+                    if (option.innerHTML === event.instructor) {
+                        option.setAttribute('selected', "")
+                    }
+                })
+                form.querySelector(`#flightStudent`).querySelectorAll('option').forEach(option => {
+                    if (option.innerHTML === event.student) {
+                        option.setAttribute('selected', "")
+                    }
+                })
+                form.querySelector(`#aircraft`).querySelectorAll('option').forEach(option => {
+                    if (option.innerHTML === event.aircraft) {
+                        option.setAttribute('selected', "")
+                    }
+                })
+            }
+            break loop1;
+        }
+    }
+}
+function hideEditEventOverlay() {
+    document.getElementById('edit-event-overlay').style.display = "none";
+}
+function toggleEditEventOverlay() {
+    if (document.getElementById('edit-event-overlay').style.display === "block") {
+        hideEditEventOverlay();
+    } else {
+        showEditEventOverlay(this);
+    }
+}
+function editEvent() {
+    this // _id
+}
+const editAvailabilityForm = document.getElementById('edit-availability-form')
+const editFlightForm = document.getElementById('edit-flight-form')
+const editClassForm = document.getElementById('edit-class-form')
+const editExamForm = document.getElementById('edit-exam-form')
+editAvailabilityForm.addEventListener('submit', e => {
+    e.preventDefault();
+    console.log(e.target.elements);
+    const _id = e.target.dataset._id
+    const startTime = e.target.elements.availabilityStartTime.value
+    const endTime = e.target.elements.availabilityEndTime.value
+    const asset = e.target.elements.asset.value
+    calendarParams.clientDate = new Date()
+    const output = {
+        _id,
+        type: 'notAvailable',
+        startTime,
+        endTime,
+        asset,
+        clientDate: calendarParams.clientDate,
+        weekStartDay: calendarParams.weekStartDay
+    }
+    socket.emit('edit_event', output)
+})
+editFlightForm.addEventListener('submit', e => {
+    e.preventDefault();
+    console.log(e.target.elements);
+    const _id = e.target.dataset._id
+    const startTime = e.target.elements.flightStartTime.value
+    const endTime = e.target.elements.flightEndTime.value
+    const aircraft = e.target.elements.aircraft.value
+    const student = e.target.elements.flightStudent.value
+    const instructor = e.target.elements.flightInstructor.value
+    calendarParams.clientDate = new Date()
+    const output = {
+        _id,
+        type: 'flight',
+        startTime,
+        endTime,
+        aircraft,
+        student,
+        instructor,
+        clientDate: calendarParams.clientDate,
+        weekStartDay: calendarParams.weekStartDay
+    }
+    socket.emit('edit_event', output)
+})
+editClassForm.addEventListener('submit', e => {
+    e.preventDefault();
+    console.log(e.target.elements);
+    const _id = e.target.dataset._id
+    const startTime = e.target.elements.classStartTime.value
+    const endTime = e.target.elements.classEndTime.value
+    const student = e.target.elements.classStudent.value
+    const instructor = e.target.elements.classInstructor.value
+    const subject = e.target.elements.classSubject.value
+    const room = e.target.elements.classRoom.value
+    calendarParams.clientDate = new Date()
+    const output = {
+        _id,
+        type: 'class',
+        startTime,
+        endTime,
+        subject,
+        room,
+        student,
+        instructor,
+        clientDate: calendarParams.clientDate,
+        weekStartDay: calendarParams.weekStartDay
+    }
+    socket.emit('edit_event', output)
+})
+editExamForm.addEventListener('submit', e => {
+    e.preventDefault();
+    console.log(e.target.elements);
+    const _id = e.target.dataset._id
+    const startTime = e.target.elements.examStartTime.value
+    const endTime = e.target.elements.examEndTime.value
+    const student = e.target.elements.examStudent.value
+    const instructor = e.target.elements.examInstructor.value
+    const subject = e.target.elements.examSubject.value
+    const room = e.target.elements.examRoom.value
+    calendarParams.clientDate = new Date()
+    const output = {
+        _id,
+        type: 'exam',
+        startTime,
+        endTime,
+        subject,
+        room,
+        student,
+        instructor,
+        clientDate: calendarParams.clientDate,
+        weekStartDay: calendarParams.weekStartDay
+    }
+    socket.emit('edit_event', output)
+})
+
+// AVAILABILITY FORM
+function showAvailability() {
+    document.getElementById('availability-overlay').style.display = "block";
+}
+function hideAvailability() {
+    document.getElementById('availability-overlay').style.display = "none";
+}
+const availabilityForm = document.getElementById('availability-form')
+availabilityForm.addEventListener('submit', e => {
+    e.preventDefault();
+    console.log(e.target.elements);
+    const startTime = e.target.elements.availabilityStartTime.value
+    const endTime = e.target.elements.availabilityEndTime.value
+    const asset = e.target.elements.asset.value
+
+    calendarParams.clientDate = new Date()
+
+    const output = {
+        type: 'notAvailable',
+        startTime,
+        endTime,
+        asset,
+        clientDate: calendarParams.clientDate,
+        weekStartDay: calendarParams.weekStartDay
+    }
+    socket.emit('new_event', output)
+})

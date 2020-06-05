@@ -10,7 +10,8 @@ const EventSchema = Schema({
   student: String,
   aircraft: String,
   room: String,
-  Subject: String,
+  subject: String,
+  asset: String,
   status: {
     type: Boolean,
     default: false

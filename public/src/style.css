@@ -30,6 +30,34 @@ body {
     box-sizing: border-box;
 }
 
+#availability-overlay {
+    width: 25%;
+    /* min-height: 450px; */
+    padding: 15px;
+    background-color: white;
+    position: absolute;
+    top: 45%;
+    left: 37.5%;
+    z-index: 999;
+    border: 1px solid lightgrey;
+    border-radius: 5px;
+    box-sizing: border-box;
+}
+
+#edit-event-overlay {
+    width: 25%;
+    /* min-height: 450px; */
+    padding: 15px;
+    background-color: white;
+    position: absolute;
+    top: 45%;
+    left: 37.5%;
+    z-index: 999;
+    border: 1px solid lightgrey;
+    border-radius: 5px;
+    box-sizing: border-box;
+}
+
 span[contenteditable="true"] {
     background: white;
 }
@@ -49,6 +77,14 @@ span[contenteditable="false"] {
     right: 30px;
     top: 0;
     font-size: 4rem;
+    cursor: pointer;
+}
+
+#availability {
+    position: absolute;
+    left: 30px;
+    top: 30px;
+    font-size: 1.5rem;
     cursor: pointer;
 }
 
@@ -332,6 +368,11 @@ ul {list-style-type: none;}
 
 .event.flight {
     background-color: rgb(164, 229, 255);
+}
+
+.event.notAvailable {
+    background-color: rgb(255, 56, 30);
+    color: white;
 }
 
 #new-event-header {
