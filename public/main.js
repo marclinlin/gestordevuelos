@@ -442,7 +442,7 @@ function showEditEventOverlay(_id) {
 
             const timeZoneOffset = startDate.getTimezoneOffset() * 60000; //offset in milliseconds
             const localISOStartTime = (new Date(startDate - timeZoneOffset)).toISOString().substring(0, 19);
-            const localISOEndTime = (new Date(startDate - timeZoneOffset)).toISOString().substring(0, 19);
+            const localISOEndTime = (new Date(endDate - timeZoneOffset)).toISOString().substring(0, 19);
             // console.log(localISOStartTime);
             // console.log(localISOEndTime);
             form.querySelector(`#${type}StartTime`).setAttribute('value', localISOStartTime)

@@ -55,65 +55,153 @@ server.listen(app.get('port'), () => {
 io.on('connection', socket => {
     console.log('New connection')
 
+
+    // EVENTS
+
+    // Send events
     const sendEvents = async (clientDate, weekStartDay) => {
         // get client date and first day of the week
         const output = calendarDaysMonth(clientDate, weekStartDay)
         const events = await Event.find(
             {
                 startTime: {
-                    $gte: output.firsDayDate,
-                    $lt: output.lastDayDate
+                    $gte: output.firstDayDate,
+                    $lt: output.lastDayDate // CHECK FOR BUGS: $lte instead?
                 }
             }
         )
-        console.log(events);
+        // console.log(events);
         socket.emit('update_events', events)
         socket.emit('message', 'Events received from the server')
     }
 
-    socket.on('get_month_calendar', input => {
-        const clientDate = new Date(input.clientDate)
-        const weekStartDay = input.weekStartDay;
-        const output = calendarDaysMonth(clientDate, weekStartDay)
-        socket.emit('month_calendar', output)
-        console.log(`Month calendar sent`);
-        sendEvents(clientDate, weekStartDay);
-    })
-
+    // Add event
     socket.on('new_event', async input => {
-        // Create a flight event
-        const event = new Event()
-        event.type = input.type
-        event.startTime = input.startTime
-        event.endTime = input.endTime
-        if (input.type === 'flight') {
-            event.instructor = input.instructor
-            event.student = input.student
-            event.aircraft = input.aircraft
-            await event.save()
-            socket.emit('message', 'The event was saved to the DB')
-        } else if (input.type === 'class' || input.type === 'exam') {
-            event.instructor = input.instructor
-            event.student = input.student
-            event.subject = input.subject
-            event.room = input.room
-            await event.save()
-            // const occupied = [input.startTime,input.endTime]
-            // const user = await User.findById(input.instructorid)
-            // user.occupied = user.occupied.push(occupied)
-            socket.emit('message', 'The event was saved to the DB')
-        } else if (input.type === 'notAvailable') {
-            event.asset = input.asset;
-            await event.save()
-            socket.emit('message', 'The availability was saved to the DB')
+        const available = await checkAvailability(input)
+        if (available) {
+            // Create a flight event
+            const event = new Event()
+            event.type = input.type
+            event.startTime = new Date(input.startTime)
+            event.endTime = new Date(input.endTime)
+            if (input.type === 'flight') {
+                event.instructor = input.instructor
+                event.student = input.student
+                event.aircraft = input.aircraft
+                await event.save()
+                socket.emit('message', 'The event was saved to the DB')
+            } else if (input.type === 'class' || input.type === 'exam') {
+                event.instructor = input.instructor
+                event.student = input.student
+                event.subject = input.subject
+                event.room = input.room
+                await event.save()
+                // const occupied = [input.startTime,input.endTime]
+                // const user = await User.findById(input.instructorid)
+                // user.occupied = user.occupied.push(occupied)
+                socket.emit('message', 'The event was saved to the DB')
+            } else if (input.type === 'notAvailable') {
+                event.asset = input.asset;
+                await event.save()
+                socket.emit('message', 'The availability was saved to the DB')
+            }
+            const clientDate = new Date(input.clientDate)
+            sendEvents(clientDate, input.weekStartDay);
+        } else {
+            socket.emit('message', 'The event cannot be added with the current restrictions')
+            console.log(`The event cannot be added with the current restrictions`);
         }
-        const clientDate = new Date(input.clientDate)
-        sendEvents(clientDate, input.weekStartDay);
     })
 
+    // Edit event
+    const editEvent = async function (input) {
+        const available = await checkAvailability(input)
+        // console.log(`Available: ${available}`);
+        if (available) {
+            const event = await Event.findById(input._id)
+            // console.log(event);
+            event.type = input.type
+            event.startTime = new Date(input.startTime)
+            event.endTime = new Date(input.endTime)
+            if (input.type === 'flight') {
+                event.instructor = input.instructor
+                event.student = input.student
+                event.aircraft = input.aircraft
+                await event.save()
+                socket.emit('message', `Event updated`)
+                console.log(`Event updated`)
+            } else if (input.type === 'class' || input.type === 'exam') {
+                event.instructor = input.instructor
+                event.student = input.student
+                event.subject = input.subject
+                event.room = input.room
+                await event.save()
+                socket.emit('message', `Event updated`)
+                console.log(`Event updated`)
+            } else if (input.type === 'notAvailable') {
+                event.asset = input.asset;
+                await event.save()
+                socket.emit('message', `Event updated`)
+                console.log(`Event updated`)
+            }
+            const clientDate = new Date(input.clientDate)
+            sendEvents(clientDate, input.weekStartDay);
+        } else {
+            socket.emit('message', 'The event cannot be edited with the current restrictions')
+            console.log(`The event cannot be edited with the current restrictions`);
+        }
+    }
+    socket.on('edit_event', input => { editEvent(input) })
+
+    // Delete event
+    const deleteEvent = async function (input) {
+    }
+    socket.on('delete_event', input => { deleteEvent(input) })
+
+    // Check if an event can be added/edited with the current restrictions
+    async function checkAvailability(currentEvent) {
+        const events = await Event.find()
+        // events.map(event => { console.log(event.type); })
+        // const previousEvents = events.filter(event => { event.type === 'notAvailable' })
+        const restrictions = []
+        for (const event of events) {
+            if (event.type === 'notAvailable') {
+                restrictions.push(event)
+            }
+        }
+        // console.log(events);
+        // console.log(restrictions);
+        let available = true;
+        restrictions.forEach(restriction => {
+            const asset = restriction.asset
+            if (currentEvent.aircraft === asset ||
+                currentEvent.instructor === asset ||
+                currentEvent.student === asset ||
+                currentEvent.room === asset ||
+                currentEvent.subject === asset) {
+                const restrictionStartTime = restriction.startTime;
+                const restrictionEndTime = restriction.endTime;
+                const eventStartTime = new Date(currentEvent.startTime);
+                const eventEndTime = new Date(currentEvent.endTime);
+                // console.log(restrictionStartTime);
+                // console.log(restrictionEndTime);
+                // console.log(eventStartTime);
+                // console.log(eventEndTime);
+                if ((eventStartTime >= restrictionStartTime && eventStartTime < restrictionEndTime) ||
+                    (eventEndTime > restrictionStartTime && eventEndTime <= restrictionEndTime) ||
+                    (eventStartTime < restrictionStartTime && eventEndTime > restrictionEndTime)) {
+                    available = false;
+                }
+            }
+        });
+        // console.log(available);
+        return available;
+    }
 
 
+    // USERS
 
+    // Send users
     const sendInstructors = async function () {
         const instructors = await User.find({ role: 'instructor' })
         //checkAvailavility(event.startTime, event.endTime, instructors.availability)
@@ -121,26 +209,23 @@ io.on('connection', socket => {
         socket.emit('message', 'Received available instructors')
         console.log('Sending available instructors')
     }
-
     const sendStudents = async function () {
         const students = await User.find({ role: 'student' })
         socket.emit('send_students', students)
         socket.emit('message', 'Received available students')
         console.log('Sending available students')
     }
-
     const sendUsers = async function () {
         const users = await User.find()
         socket.emit('users_list', users)
         socket.emit('message', 'Received users')
         console.log('Sending users')
     }
-
     socket.on('get_instructors', sendInstructors)
     socket.on('get_students', sendStudents)
     socket.on('get_users', sendUsers)
 
-    //Create user
+    // Add user
     const addUser = async function (input) {
         const user = new User()
         user.role = input.role
@@ -158,14 +243,15 @@ io.on('connection', socket => {
     }
     socket.on('new_user', input => { addUser(input) })
 
-    //Edit user
+    // Edit user
     const editUser = async function (input) {
         const user = await User.findById(input._id)
         user.id = input.id
         user.role = input.role
         user.age = input.age
-        user.firstName = input.firstName
-        user.lastName = input.lastName
+        user.name = input.name
+        // user.firstName = input.firstName
+        // user.lastName = input.lastName
         await user.save()
         socket.emit('message', `User ${input.id} updated`)
         console.log(`User ${input.id} (${input._id}) updated`)
@@ -173,7 +259,7 @@ io.on('connection', socket => {
     }
     socket.on('edit_user', input => { editUser(input) })
 
-    //Delete user
+    // Delete user
     socket.on('delete_user', async input => {
         await User.remove({ _id: input._id })
         socket.emit('message', `User ${input.id} deleted`)
@@ -181,55 +267,23 @@ io.on('connection', socket => {
         sendUsers();
     })
 
-    // Check if an event can be added with the current restrictions
-    function checkAvailavility(startTime, endTime, eventTimes) {
-        eventTimes.map(element => {
-            console.log(element)
-            if ((startTime > element[0] && startTime < element[1]) ||
-                (endTime > element[0] && endTime < element[1]) ||
-                (startTime < element[0] && endTime > element[1])) {
-                console.log('not available')
-            }
-        });
-    }
 
+    // VIEWS
 
-    //Edit event
-    const editEvent = async function (input) {
-        const event = await Event.findById(input._id)
-        console.log(event);
-        event.type = input.type
-        event.startTime = input.startTime
-        event.endTime = input.endTime
-        if (input.type === 'flight') {
-            event.instructor = input.instructor
-            event.student = input.student
-            event.aircraft = input.aircraft
-            await event.save()
-            socket.emit('message', `Event updated`)
-            console.log(`Event updated`)
-        } else if (input.type === 'class' || input.type === 'exam') {
-            event.instructor = input.instructor
-            event.student = input.student
-            event.subject = input.subject
-            event.room = input.room
-            await event.save()
-            socket.emit('message', `Event updated`)
-            console.log(`Event updated`)
-        } else if (input.type === 'notAvailable') {
-            event.asset = input.asset;
-            await event.save()
-            socket.emit('message', `Event updated`)
-            console.log(`Event updated`)
-        }
+    // Month calendar
+    socket.on('get_month_calendar', input => {
         const clientDate = new Date(input.clientDate)
-        sendEvents(clientDate, input.weekStartDay);
-    }
-    socket.on('edit_event', input => { editEvent(input) })
+        const weekStartDay = input.weekStartDay;
+        const output = calendarDaysMonth(clientDate, weekStartDay)
+        socket.emit('month_calendar', output)
+        console.log(`Month calendar sent`);
+        sendEvents(clientDate, weekStartDay);
+    })
 
+    // Week calendar
+    socket.on('get_week_calendar', input => { })
 
-
-    // Calculate week days
+    // Calculate week days (move to different file too?)
     function calendarDaysWeek(clientDate, weekStartDay) {
         const days = []
         const output = {}
