@@ -36,22 +36,6 @@ server.listen(app.get('port'), () => {
 })
 
 
-// const event = new Event()
-// event.type = 'class'
-// event.startTime = new Date
-// event.endTime = new Date
-// event.subject = 'Perf'
-// event.instructor = 'Ignacio Pablos'
-// event.student = 'David Verdeguer'
-// event.room = 'A21'
-// event.save()
-
-// async function findinstructors() {
-// const instructors = await User.find({role:'instructor'})
-// console.log(instructors)
-// }
-// findinstructors()
-
 io.on('connection', socket => {
     console.log('New connection')
 
@@ -96,9 +80,6 @@ io.on('connection', socket => {
                 event.subject = input.subject
                 event.room = input.room
                 await event.save()
-                // const occupied = [input.startTime,input.endTime]
-                // const user = await User.findById(input.instructorid)
-                // user.occupied = user.occupied.push(occupied)
                 socket.emit('message', 'The event was saved to the DB')
             } else if (input.type === 'notAvailable') {
                 event.asset = input.asset;
@@ -155,6 +136,9 @@ io.on('connection', socket => {
 
     // Delete event
     const deleteEvent = async function (input) {
+        const event = await Event.findByIdAndDelete(input._id)
+        socket.emit('message', `Event deleted`)
+        console.log(`Event deleted`)
     }
     socket.on('delete_event', input => { deleteEvent(input) })
 
