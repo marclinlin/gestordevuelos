@@ -614,3 +614,50 @@ availabilityForm.addEventListener('submit', e => {
     }
     socket.emit('new_event', output)
 })
+
+const deleteAvailabilityEventButton = document.getElementById('delete_availability_event')
+const deleteFlightEventButton = document.getElementById('delete_flight_event')
+const deleteClassEventButton = document.getElementById('delete_class_event')
+const deleteExamEventButton = document.getElementById('delete_exam_event')
+deleteAvailabilityEventButton.addEventListener('click', e => {
+    e.preventDefault();
+    calendarParams.clientDate = new Date()
+    const outputEvent = {
+        _id: e.target.parentNode.dataset._id,
+        clientDate: calendarParams.clientDate,
+        weekStartDay: calendarParams.weekStartDay
+    }
+    socket.emit('delete_event', outputEvent)
+})
+deleteFlightEventButton.addEventListener('click', e => {
+    e.preventDefault();
+    calendarParams.clientDate = new Date()
+    const outputEvent = {
+        _id: e.target.parentNode.dataset._id,
+        clientDate: calendarParams.clientDate,
+        weekStartDay: calendarParams.weekStartDay
+    }
+    socket.emit('delete_event', outputEvent)
+})
+deleteClassEventButton.addEventListener('click', e => {
+    e.preventDefault();
+    calendarParams.clientDate = new Date()
+    const outputEvent = {
+        _id: e.target.parentNode.dataset._id,
+        clientDate: calendarParams.clientDate,
+        weekStartDay: calendarParams.weekStartDay
+    }
+    socket.emit('delete_event', outputEvent)
+})
+deleteExamEventButton.addEventListener('click', e => {
+    e.preventDefault();
+    calendarParams.clientDate = new Date()
+    const outputEvent = {
+        _id: e.target.parentNode.dataset._id,
+        clientDate: calendarParams.clientDate,
+        weekStartDay: calendarParams.weekStartDay
+    }
+    socket.emit('delete_event', outputEvent)
+})
+
+console.log(deleteFlightEventButton);

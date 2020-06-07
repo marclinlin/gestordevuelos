@@ -139,6 +139,8 @@ io.on('connection', socket => {
         const event = await Event.findByIdAndDelete(input._id)
         socket.emit('message', `Event deleted`)
         console.log(`Event deleted`)
+        const clientDate = new Date(input.clientDate)
+        sendEvents(clientDate, input.weekStartDay);
     }
     socket.on('delete_event', input => { deleteEvent(input) })
 
