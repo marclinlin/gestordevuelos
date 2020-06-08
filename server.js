@@ -100,30 +100,29 @@ io.on('connection', socket => {
         // console.log(`Available: ${available}`);
         if (available) {
             const event = await Event.findById(input._id)
-            // console.log(event);
             event.type = input.type
             event.startTime = new Date(input.startTime)
             event.endTime = new Date(input.endTime)
-            if (input.type === 'flight') {
-                event.instructor = input.instructor
-                event.student = input.student
-                event.aircraft = input.aircraft
+            let updated = false;
+            if (input.type === 'flight' || input.type === 'class' || input.type === 'exam' || input.type === 'notAvailable') {
+                updated = true;
+                if (input.type === 'flight') {
+                    event.instructor = input.instructor
+                    event.student = input.student
+                    event.aircraft = input.aircraft
+                } else if (input.type === 'class' || input.type === 'exam') {
+                    event.instructor = input.instructor
+                    event.student = input.student
+                    event.subject = input.subject
+                    event.room = input.room
+                } else if (input.type === 'notAvailable') {
+                    event.asset = input.asset;
+                }
+            }
+            if (updated) {
                 await event.save()
-                socket.emit('message', `Event updated`)
-                console.log(`Event updated`)
-            } else if (input.type === 'class' || input.type === 'exam') {
-                event.instructor = input.instructor
-                event.student = input.student
-                event.subject = input.subject
-                event.room = input.room
-                await event.save()
-                socket.emit('message', `Event updated`)
-                console.log(`Event updated`)
-            } else if (input.type === 'notAvailable') {
-                event.asset = input.asset;
-                await event.save()
-                socket.emit('message', `Event updated`)
-                console.log(`Event updated`)
+                socket.emit('message', `Event ${input._id} updated`)
+                console.log(`Event ${input._id} updated`)
             }
             const clientDate = new Date(input.clientDate)
             sendEvents(clientDate, input.weekStartDay);

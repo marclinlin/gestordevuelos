@@ -1,16 +1,26 @@
 const socket = io.connect('http://localhost:3000/');
 socket.on('message', msg => { console.log(msg); })
 
-// INITIAL DATA
+
+/* INITIAL DATA */
 const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
 const monthNamesShort = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
 
-// GET MONTH CALENDAR
+const labels = ['availability', 'flight', 'class', 'exam']
+const assets = ['Rubén Velázquez', 'Tomás Losa', 'Jaime Martín', 'Marcos Lin', 'David Verdeguer',
+    'Ahmed al-Kindi', 'EC-NAQ', 'EC-NEM', 'Room 1', 'Room 2'];
+const instructors = ['Rubén Velázquez', 'Jaime Martín', 'Tomás Losa']
+const students = ['Marcos Lin', 'David Verdeguer', 'Ahmed al-Kindi']
+const aircraftList = ['EC-NAQ', 'EC-NEM']
+const subjects = ['Principles of flight', 'Meteorology']
+const rooms = ['Room 1', 'Room 2']
+
+
+/* GET MONTH CALENDAR */
 const calendarParams = {
     clientDate: new Date(),
     weekStartDay: 'Monday'
 }
-
 socket.emit('get_month_calendar', calendarParams);
 socket.on('month_calendar', input => {
     const currentYear = input.currentYear;
@@ -21,64 +31,6 @@ socket.on('month_calendar', input => {
     const weekStartingDay = input.weekStartingDay;
     const days = input.days;
     console.log(input);
-
-    /* const events = [
-        {
-            day: 19,
-            month: 'May',
-            startTimeHours: '12',
-            startTimeMinutes: '00',
-            endTimeHours: '15',
-            endTimeMinutes: '30',
-            type: 'flight',
-            aircraft: 'EC-NAQ',
-            instructor: 'Rubén Velázquez'
-        },
-        {
-            day: 22,
-            month: 'May',
-            startTimeHours: '10',
-            startTimeMinutes: '00',
-            endTimeHours: '11',
-            endTimeMinutes: '30',
-            type: 'exam',
-            subject: 'Air Law',
-            instructor: 'Jordi Adell'
-        },
-        {
-            day: 22,
-            month: 'May',
-            startTimeHours: '12',
-            startTimeMinutes: '00',
-            endTimeHours: '15',
-            endTimeMinutes: '00',
-            type: 'flight',
-            aircraft: 'EC-NEM',
-            instructor: 'Tomás Losa'
-        },
-        {
-            day: 22,
-            month: 'May',
-            startTimeHours: '16',
-            startTimeMinutes: '00',
-            endTimeHours: '21',
-            endTimeMinutes: '00',
-            type: 'class',
-            subject: 'Meteorology',
-            instructor: 'Jordi Adell'
-        },
-        {
-            day: 14,
-            month: 'May',
-            startTimeHours: '12',
-            startTimeMinutes: '00',
-            endTimeHours: '14',
-            endTimeMinutes: '00',
-            type: 'exam',
-            subject: 'POF',
-            instructor: 'Ignacio García'
-        }
-    ] */
 
 
     /* CREATE CALENDAR */
@@ -140,30 +92,27 @@ socket.on('month_calendar', input => {
 
     // Add event button
     document.getElementById('new-event').addEventListener('click', () => {
-        if (document.getElementById('overlay').style.display === 'block') {
+        if (document.getElementById('new-event-overlay').style.display === 'block') {
             hideNewEvent();
         } else {
-            hideAvailability();
             showNewEvent();
         }
     })
-    addEventForms();
+    addEventForm();
 
     // Availability button
-    document.getElementById('availability').addEventListener('click', () => {
+    /* document.getElementById('availability').addEventListener('click', () => {
         if (document.getElementById('availability-overlay').style.display === 'block') {
-            hideAvailability();
         } else {
             hideNewEvent();
-            showAvailability();
         }
-    })
+    }) */
 })
 
 let eventsList = [];
 function renderEvents(events) {
     eventsList = events;
-    document.querySelectorAll('form[data-_id]').forEach(form => form.removeAttribute(`data-_id`))
+    document.querySelectorAll('form[data-_id]').forEach(form => form.removeAttribute(`data-_id`)) // NEEDS FIX??
     document.querySelectorAll('.event').forEach(event => { event.parentNode.removeChild(event) })
     loop1: for (const event of events) {
         const type = event.type;
@@ -219,146 +168,233 @@ function renderEvents(events) {
 }
 socket.on('update_events', events => {
     hideNewEvent();
-    hideAvailability();
     hideEditEventOverlay();
     renderEvents(events)
 })
 
 // NEW EVENT FORM
+const addForm = document.getElementById('new-event-form')
 function showNewEvent() {
-    document.getElementById('overlay').style.display = "block";
+    document.getElementById('new-event-overlay').style.display = "block";
 }
 function hideNewEvent() {
-    document.getElementById('overlay').style.display = "none";
+    document.getElementById('new-event-overlay').style.display = "none";
 }
-function addEventForms() {
+function addEventForm() {
+    editForm.querySelectorAll('div').forEach(node => { node.parentNode.removeChild(node) })
+    editForm.querySelectorAll('input').forEach(node => { node.parentNode.removeChild(node) })
     /* ADD EVENT FORMS */
     const radios = document.getElementsByName('type-radio');
-    const flightForm = document.getElementById('flight-form');
-    const classForm = document.getElementById('class-form');
-    const examForm = document.getElementById('exam-form');
-    /* const simForm = document.getElementById('sim-form');
-    const otherForm = document.getElementById('other-form'); */
+    let type = undefined;
 
     // Show forms
-    for (let i = 0; i < radios.length; i++) {
-        radios[i].onclick = function () {
-            const overlay = document.getElementById('overlay');
-            const flightLabel = document.getElementById('flight-label')
-            const classLabel = document.getElementById('class-label')
-            const examLabel = document.getElementById('exam-label')
+    for (const radio of radios) {
+        radio.onclick = function () {
+            type = this.value;
+            addForm.querySelectorAll('div.form-field').forEach(field => {
+                if (!field.querySelector('#startTime') && !field.querySelector('#endTime')) {
+                    field.parentNode.removeChild(field)
+                }
+            })
+            addForm.querySelectorAll('input[type="submit"]').forEach(node => { node.parentNode.removeChild(node) })
+            const overlay = document.getElementById('new-event-overlay');
+
             if (overlay.classList[0] == 'before-click') {
                 overlay.classList.remove('before-click')
                 overlay.classList.add('after-click')
             }
-            const value = this.value;
-            if (value == 'flight') {
-                flightLabel.classList.add('active')
-                classLabel.classList.remove('active')
-                examLabel.classList.remove('active')
-                flightForm.style.display = 'block'; // show
-                classForm.style.display = 'none'; // hide
-                examForm.style.display = 'none'; // hide
-            } else if (value == 'class') {
-                flightLabel.classList.remove('active')
-                classLabel.classList.add('active')
-                examLabel.classList.remove('active')
-                flightForm.style.display = 'none'; // show
-                classForm.style.display = 'block'; // hide
-                examForm.style.display = 'none'; // hide
-            } else if (value == 'exam') {
-                flightLabel.classList.remove('active')
-                classLabel.classList.remove('active')
-                examLabel.classList.add('active')
-                flightForm.style.display = 'none'; // show
-                classForm.style.display = 'none'; // hide
-                examForm.style.display = 'block'; // hide
+
+            for (const label of labels) {
+                const labelElement = document.getElementById(`${label}-label`)
+                if (type === label) {
+                    labelElement.classList.add('active')
+                } else {
+                    labelElement.classList.remove('active')
+                }
             }
+
+            if (!addForm.querySelector('#startTime') && !addForm.querySelector('#endTime')) {
+                // Start time
+                const newFieldST = document.createElement('div')
+                newFieldST.classList.add('form-field')
+                newFieldST.innerHTML = `
+                <div class="label">Start time</div>
+                <input type="datetime-local" id="startTime" name="startTime">
+                `;
+                addForm.appendChild(newFieldST)
+
+                // End time
+                const newFieldET = document.createElement('div')
+                newFieldET.classList.add('form-field')
+                newFieldET.innerHTML = `
+                <div class="label">End time</div>
+                <input type="datetime-local" id="endTime" name="endTime">
+                `;
+                addForm.appendChild(newFieldET)
+            }
+
+            if (type === 'availability') {
+                // Asset option
+                const newField1 = document.createElement('div')
+                newField1.classList.add('form-field')
+                newField1.innerHTML = `
+                <div class="label">Asset:</div>
+                <div class="input size50">
+                    <select id="asset" class="styled">
+                    </select>
+                </div>
+                `;
+                addForm.appendChild(newField1)
+                const assetInput = document.getElementById('asset');
+                assetInput.innerHTML = `<option selected>Select asset</option>`
+                for (const asset of assets) {
+                    const newOption = document.createElement('option')
+                    newOption.innerHTML = asset;
+                    assetInput.appendChild(newOption)
+                }
+            } else if (type === 'flight') {
+                // Instructor
+                const newField1 = document.createElement('div')
+                newField1.classList.add('form-field')
+                newField1.innerHTML = `
+                <div class="label">Instructor:</div>
+                <div class="input size50">
+                    <select id="instructor" class="styled">
+                    </select>
+                </div>
+                `;
+                addForm.appendChild(newField1)
+                const instructorInput = document.getElementById('instructor');
+                instructorInput.innerHTML = `<option selected>Select instructor</option>`
+                for (const instructor of instructors) {
+                    const newOption = document.createElement('option')
+                    newOption.innerHTML = instructor;
+                    instructorInput.appendChild(newOption)
+                }
+
+                // Student
+                const newField2 = document.createElement('div')
+                newField2.classList.add('form-field')
+                newField2.innerHTML = `
+                <div class="label">Student:</div>
+                <div class="input size50">
+                    <select id="student" class="styled">
+                    </select>
+                </div>
+                `;
+                addForm.appendChild(newField2)
+                const studentInput = document.getElementById('student');
+                studentInput.innerHTML = `<option selected>Select student</option>`
+                for (const student of students) {
+                    const newOption = document.createElement('option')
+                    newOption.innerHTML = student;
+                    studentInput.appendChild(newOption)
+                }
+
+                // Aircraft
+                const newField3 = document.createElement('div')
+                newField3.classList.add('form-field')
+                newField3.innerHTML = `
+                <div class="label">Aircraft:</div>
+                <div class="input size50">
+                    <select id="aircraft" class="styled">
+                    </select>
+                </div>
+                `;
+                addForm.appendChild(newField3)
+                const aircraftInput = document.getElementById('aircraft');
+                aircraftInput.innerHTML = `<option selected>Select aircraft</option>`
+                for (const aircraft of aircraftList) {
+                    const newOption = document.createElement('option')
+                    newOption.innerHTML = aircraft;
+                    aircraftInput.appendChild(newOption)
+                }
+            } else if (type === 'class' || type === 'exam') {
+                // Instructor
+                const newField1 = document.createElement('div')
+                newField1.classList.add('form-field')
+                newField1.innerHTML = `
+                <div class="label">Instructor:</div>
+                <div class="input size50">
+                    <select id="instructor" class="styled">
+                    </select>
+                </div>
+                `;
+                addForm.appendChild(newField1)
+                const instructorInput = document.getElementById('instructor');
+                instructorInput.innerHTML = `<option selected>Select instructor</option>`
+                for (const instructor of instructors) {
+                    const newOption = document.createElement('option')
+                    newOption.innerHTML = instructor;
+                    instructorInput.appendChild(newOption)
+                }
+
+                // Student
+                const newField2 = document.createElement('div')
+                newField2.classList.add('form-field')
+                newField2.innerHTML = `
+                <div class="label">Student:</div>
+                <div class="input size50">
+                    <select id="student" class="styled">
+                    </select>
+                </div>
+                `;
+                addForm.appendChild(newField2)
+                const studentInput = document.getElementById('student');
+                studentInput.innerHTML = `<option selected>Select student</option>`
+                for (const student of students) {
+                    const newOption = document.createElement('option')
+                    newOption.innerHTML = student;
+                    studentInput.appendChild(newOption)
+                }
+
+                // Subject
+                const newField3 = document.createElement('div')
+                newField3.classList.add('form-field')
+                newField3.innerHTML = `
+                <div class="label">Subject:</div>
+                <div class="input size50">
+                    <select id="subject" class="styled">
+                    </select>
+                </div>
+                `;
+                addForm.appendChild(newField3)
+                const subjectInput = document.getElementById('subject');
+                subjectInput.innerHTML = `<option selected>Select subject</option>`
+                for (const subject of subjects) {
+                    const newOption = document.createElement('option')
+                    newOption.innerHTML = subject;
+                    subjectInput.appendChild(newOption)
+                }
+
+                // Room
+                const newField4 = document.createElement('div')
+                newField4.classList.add('form-field')
+                newField4.innerHTML = `
+                <div class="label">Room:</div>
+                <div class="input size50">
+                    <select id="room" class="styled">
+                    </select>
+                </div>
+                `;
+                addForm.appendChild(newField4)
+                const roomInput = document.getElementById('room');
+                roomInput.innerHTML = `<option selected>Select room</option>`
+                for (const room of rooms) {
+                    const newOption = document.createElement('option')
+                    newOption.innerHTML = room;
+                    roomInput.appendChild(newOption)
+                }
+            }
+            const newSubmitButton = document.createElement('input')
+            newSubmitButton.setAttribute('type', 'submit')
+            newSubmitButton.setAttribute('value', 'Add')
+            addForm.appendChild(newSubmitButton)
+            addForm.style.display = 'block';
         }
     }
 
-    // Submit forms
-    flightForm.addEventListener('submit', e => {
-        e.preventDefault();
-        console.log(e.target.elements);
-        const startTime = e.target.elements.flightStartTime.value
-        const endTime = e.target.elements.flightEndTime.value
-        const instructor = e.target.elements.flightInstructor.value
-        const student = e.target.elements.flightStudent.value
-        const aircraft = e.target.elements.aircraft.value
-
-        calendarParams.clientDate = new Date()
-
-        const output = {
-            type: 'flight',
-            startTime,
-            endTime,
-            instructor,
-            student,
-            aircraft,
-            clientDate: calendarParams.clientDate,
-            weekStartDay: calendarParams.weekStartDay
-        }
-        socket.emit('new_event', output)
-    })
-    classForm.addEventListener('submit', e => {
-        e.preventDefault();
-        const startTime = e.target.elements.classStartTime.value
-        const endTime = e.target.elements.classEndTime.value
-        const subject = e.target.elements.classSubject.value
-        const instructor = e.target.elements.classInstructor.value
-        const student = e.target.elements.classStudent.value
-        const room = e.target.elements.classRoom.value
-
-        calendarParams.clientDate = new Date()
-
-        const output = {
-            type: 'class',
-            startTime,
-            endTime,
-            subject,
-            instructor,
-            student,
-            room,
-            clientDate: calendarParams.clientDate,
-            weekStartDay: calendarParams.weekStartDay
-        }
-        socket.emit('new_event', output)
-    })
-    examForm.addEventListener('submit', e => {
-        e.preventDefault();
-        const startTime = e.target.elements.examStartTime.value
-        const endTime = e.target.elements.examEndTime.value
-        const subject = e.target.elements.examSubject.value
-        const instructor = e.target.elements.examInstructor.value
-        const student = e.target.elements.examStudent.value
-        const room = e.target.elements.examRoom.value
-
-        calendarParams.clientDate = new Date()
-
-        const output = {
-            type: 'exam',
-            startTime,
-            endTime,
-            subject,
-            instructor,
-            student,
-            room,
-            clientDate: calendarParams.clientDate,
-            weekStartDay: calendarParams.weekStartDay
-        }
-        socket.emit('new_event', output)
-    })
-    /* simForm.addEventListener('submit', e => {
-        e.preventDefault();
-        const startTime = e.target.elements.startTime.value
-        const endTime = e.target.elements.endTime.value
-        const title = e.target.elements.title.value
-        const description = e.target.elements.description.value
-        const instructor = e.target.elements.instructor.value
-        const student = e.target.elements.student.value
-        const sim = e.target.elements.sim.value
-
+    /* // SIM FORM
         const output = {
             type: 'sim',
             startTime: startTime,
@@ -367,23 +403,10 @@ function addEventForms() {
             description: description,
             instructor: instructor,
             student: student,
-            sim: sim,
+            sim: sim
         }
-        socket.emit('new_event', output)
-    })
-    otherForm.addEventListener('submit', e => {
-        e.preventDefault();
-        const startTime = e.target.elements.startTime.value
-        const endTime = e.target.elements.endTime.value
-        const subject = e.target.elements.subject.value
-        const instructor = e.target.elements.instructor.value
-        const student = e.target.elements.student.value
-        const room = e.target.elements.room.value
-        const title = e.target.elements.title.value
-        const description = e.target.elements.description.value
-        const aircraft = e.target.elements.aircraft.value
-        const sim = e.target.elements.sim.value
 
+    // OTHER FORM
         const output = {
             type: 'other',
             startTime: startTime,
@@ -396,79 +419,302 @@ function addEventForms() {
             subject: subject,
             aicraft: aircraft,
             sim: sim
+        } */
+    addForm.addEventListener('submit', e => {
+        e.preventDefault();
+        const startTime = e.target.elements.startTime.value
+        const endTime = e.target.elements.endTime.value
+        calendarParams.clientDate = new Date()
+        const output = {
+            type,
+            startTime,
+            endTime,
+            clientDate: calendarParams.clientDate,
+            weekStartDay: calendarParams.weekStartDay
         }
-        socket.emit('new_event', output)
-    }) */
 
+        if (type === 'availability') {
+            output.type = 'notAvailable'
+            output.asset = e.target.elements.asset.value
+        } else if (type === 'flight') {
+            output.instructor = e.target.elements.instructor.value
+            output.student = e.target.elements.student.value
+            output.aircraft = e.target.elements.aircraft.value
+        } else if (type === 'class' || type === 'exam') {
+            output.instructor = e.target.elements.instructor.value
+            output.student = e.target.elements.student.value
+            output.subject = e.target.elements.subject.value
+            output.room = e.target.elements.room.value
+        }
+        console.log(output);
+        socket.emit('new_event', output)
+    })
 }
 
 // EDIT EVENTS FORMS
+const editForm = document.getElementById('edit-event-form')
 function showEditEventOverlay(_id) {
-    _id = String(_id)
+    addForm.querySelectorAll('div').forEach(node => { node.parentNode.removeChild(node) })
+    addForm.querySelectorAll('input').forEach(node => { node.parentNode.removeChild(node) })
+    const newEventOverlay = document.getElementById('new-event-overlay')
+    newEventOverlay.querySelectorAll('label.active').forEach(label => { label.classList.remove('active') })
+    if (newEventOverlay.classList.contains('after-click')) {
+        newEventOverlay.classList.remove('after-click')
+        newEventOverlay.classList.add('before-click')
+    }
+    /* EDIT EVENT FORM */
+    editForm.setAttribute('data-_id', _id)
+
+    // Show forms
+    editForm.querySelectorAll('div.form-field').forEach(field => { field.parentNode.removeChild(field) })
+    editForm.querySelectorAll('input[type="submit"]').forEach(node => { node.parentNode.removeChild(node); })
+    editForm.querySelectorAll('input[type="button"]').forEach(node => { node.parentNode.removeChild(node); })
+    const type = document.querySelector(`div[data-_id="${_id}"]`).classList[1] === 'notAvailable' ? 'availability' : document.querySelector(`div[data-_id="${_id}"]`).classList[1]
+    console.log(type);
+    editForm.setAttribute('data-type', type)
+
+    if (!editForm.querySelector('#startTime') && !editForm.querySelector('#endTime')) {
+        // Start time
+        const newFieldST = document.createElement('div')
+        newFieldST.classList.add('form-field')
+        newFieldST.innerHTML = `
+        <div class="label">Start time</div>
+        <input type="datetime-local" id="startTime" name="startTime">
+        `;
+        editForm.appendChild(newFieldST)
+
+        // End time
+        const newFieldET = document.createElement('div')
+        newFieldET.classList.add('form-field')
+        newFieldET.innerHTML = `
+        <div class="label">End time</div>
+        <input type="datetime-local" id="endTime" name="endTime">
+        `;
+        editForm.appendChild(newFieldET)
+    }
+
+    if (type === 'availability') {
+        // Asset option
+        const newField1 = document.createElement('div')
+        newField1.classList.add('form-field')
+        newField1.innerHTML = `
+        <div class="label">Asset:</div>
+        <div class="input size50">
+            <select id="asset" class="styled">
+            </select>
+        </div>
+        `;
+        editForm.appendChild(newField1)
+        const assetInput = document.getElementById('asset');
+        for (const asset of assets) {
+            const newOption = document.createElement('option')
+            newOption.innerHTML = asset;
+            assetInput.appendChild(newOption)
+        }
+    } else if (type === 'flight') {
+        // Instructor
+        const newField1 = document.createElement('div')
+        newField1.classList.add('form-field')
+        newField1.innerHTML = `
+        <div class="label">Instructor:</div>
+        <div class="input size50">
+            <select id="instructor" class="styled">
+            </select>
+        </div>
+        `;
+        editForm.appendChild(newField1)
+        const instructorInput = document.getElementById('instructor');
+        for (const instructor of instructors) {
+            const newOption = document.createElement('option')
+            newOption.innerHTML = instructor;
+            instructorInput.appendChild(newOption)
+        }
+
+        // Student
+        const newField2 = document.createElement('div')
+        newField2.classList.add('form-field')
+        newField2.innerHTML = `
+        <div class="label">Student:</div>
+        <div class="input size50">
+            <select id="student" class="styled">
+            </select>
+        </div>
+        `;
+        editForm.appendChild(newField2)
+        const studentInput = document.getElementById('student');
+        for (const student of students) {
+            const newOption = document.createElement('option')
+            newOption.innerHTML = student;
+            studentInput.appendChild(newOption)
+        }
+
+        // Aircraft
+        const newField3 = document.createElement('div')
+        newField3.classList.add('form-field')
+        newField3.innerHTML = `
+        <div class="label">Aircraft:</div>
+        <div class="input size50">
+            <select id="aircraft" class="styled">
+            </select>
+        </div>
+        `;
+        editForm.appendChild(newField3)
+        const aircraftInput = document.getElementById('aircraft');
+        for (const aircraft of aircraftList) {
+            const newOption = document.createElement('option')
+            newOption.innerHTML = aircraft;
+            aircraftInput.appendChild(newOption)
+        }
+    } else if (type === 'class' || type === 'exam') {
+        // Instructor
+        const newField1 = document.createElement('div')
+        newField1.classList.add('form-field')
+        newField1.innerHTML = `
+        <div class="label">Instructor:</div>
+        <div class="input size50">
+            <select id="instructor" class="styled">
+            </select>
+        </div>
+        `;
+        editForm.appendChild(newField1)
+        const instructorInput = document.getElementById('instructor');
+        for (const instructor of instructors) {
+            const newOption = document.createElement('option')
+            newOption.innerHTML = instructor;
+            instructorInput.appendChild(newOption)
+            console.log(`Adding instructor`);
+        }
+
+        // Student
+        const newField2 = document.createElement('div')
+        newField2.classList.add('form-field')
+        newField2.innerHTML = `
+        <div class="label">Student:</div>
+        <div class="input size50">
+            <select id="student" class="styled">
+            </select>
+        </div>
+        `;
+        editForm.appendChild(newField2)
+        const studentInput = document.getElementById('student');
+        for (const student of students) {
+            const newOption = document.createElement('option')
+            newOption.innerHTML = student;
+            studentInput.appendChild(newOption)
+        }
+
+        // Subject
+        const newField3 = document.createElement('div')
+        newField3.classList.add('form-field')
+        newField3.innerHTML = `
+        <div class="label">Subject:</div>
+        <div class="input size50">
+            <select id="subject" class="styled">
+            </select>
+        </div>
+        `;
+        editForm.appendChild(newField3)
+        const subjectInput = document.getElementById('subject');
+        for (const subject of subjects) {
+            const newOption = document.createElement('option')
+            newOption.innerHTML = subject;
+            subjectInput.appendChild(newOption)
+        }
+
+        // Room
+        const newField4 = document.createElement('div')
+        newField4.classList.add('form-field')
+        newField4.innerHTML = `
+        <div class="label">Room:</div>
+        <div class="input size50">
+            <select id="room" class="styled">
+            </select>
+        </div>
+        `;
+        editForm.appendChild(newField4)
+        const roomInput = document.getElementById('room');
+        for (const room of rooms) {
+            const newOption = document.createElement('option')
+            newOption.innerHTML = room;
+            roomInput.appendChild(newOption)
+        }
+    }
+    const newSubmitButton = document.createElement('input')
+    newSubmitButton.setAttribute('type', 'submit')
+    newSubmitButton.setAttribute('value', 'Save')
+    const newDeleteButton = document.createElement('input')
+    newDeleteButton.setAttribute('type', 'button')
+    newDeleteButton.setAttribute('value', 'Delete')
+    editForm.appendChild(newSubmitButton)
+    editForm.appendChild(newDeleteButton)
+    editForm.querySelector('input[value="Delete"]').addEventListener('click', e => {
+        e.preventDefault();
+        calendarParams.clientDate = new Date()
+        const outputEvent = {
+            _id,
+            clientDate: calendarParams.clientDate,
+            weekStartDay: calendarParams.weekStartDay
+        }
+        console.log(`Deleting event ${outputEvent._id}`);
+        socket.emit('delete_event', outputEvent)
+    })
+
     // AUTO FILL FIELDS WITH EVENT DATA:
     loop1: for (const event of eventsList) {
         if (event._id === _id) {
-            document.getElementById('edit-event-overlay').style.display = "block";
             const type = event.type === 'notAvailable' ? 'availability' : event.type
-            const form = document.getElementById(`edit-${type}-form`)
-            document.getElementById('edit-event-overlay').querySelectorAll('form').forEach(form => {
-                if (form.getAttribute('id') === `edit-${type}-form`) {
-                    form.style.display = "block";
-                    form.setAttribute('data-_id', _id)
-                } else {
-                    form.style.display = "none";
-                }
-            })
             const startDate = new Date(event.startTime)
             const endDate = new Date(event.endTime)
-            /* const startYear = new Date(event.startTime).getFullYear();
-            let startMonth = new Date(event.startTime).getMonth();
-            let startDay = new Date(event.startTime).getDate();
-            const endYear = new Date(event.endTime).getFullYear();
-            let endMonth = new Date(event.endTime).getMonth();
-            let endDay = new Date(event.endTime).getDate(); */
-            /* if (startMonth < 10) {
-                startMonth = `0${startMonth}`
-            }
-            if (startDay < 10) {
-                startDay = `0${startDay}`
-            }
-            if (endMonth < 10) {
-                endMonth = `0${endMonth}`
-            }
-            if (endDay < 10) {
-                endDay = `0${endDay}`
-            } */
-
             const timeZoneOffset = startDate.getTimezoneOffset() * 60000; //offset in milliseconds
             const localISOStartTime = (new Date(startDate - timeZoneOffset)).toISOString().substring(0, 19);
             const localISOEndTime = (new Date(endDate - timeZoneOffset)).toISOString().substring(0, 19);
             // console.log(localISOStartTime);
             // console.log(localISOEndTime);
-            form.querySelector(`#${type}StartTime`).setAttribute('value', localISOStartTime)
-            form.querySelector(`#${type}EndTime`).setAttribute('value', localISOEndTime)
-            form.querySelectorAll('option').forEach(option => {
+            editForm.querySelector(`#startTime`).setAttribute('value', localISOStartTime)
+            editForm.querySelector(`#endTime`).setAttribute('value', localISOEndTime)
+            editForm.querySelectorAll('option').forEach(option => {
                 option.removeAttribute('selected')
             })
             if (type === 'availability') {
-                form.querySelector(`#asset`).querySelectorAll('option').forEach(option => {
+                editForm.querySelector(`#asset`).querySelectorAll('option').forEach(option => {
                     if (option.innerHTML === event.asset) {
                         option.setAttribute('selected', "")
                     }
                 })
             } else if (type === 'flight') {
-                form.querySelector(`#flightInstructor`).querySelectorAll('option').forEach(option => {
+                editForm.querySelector(`#instructor`).querySelectorAll('option').forEach(option => {
                     if (option.innerHTML === event.instructor) {
                         option.setAttribute('selected', "")
                     }
                 })
-                form.querySelector(`#flightStudent`).querySelectorAll('option').forEach(option => {
+                editForm.querySelector(`#student`).querySelectorAll('option').forEach(option => {
                     if (option.innerHTML === event.student) {
                         option.setAttribute('selected', "")
                     }
                 })
-                form.querySelector(`#aircraft`).querySelectorAll('option').forEach(option => {
+                editForm.querySelector(`#aircraft`).querySelectorAll('option').forEach(option => {
                     if (option.innerHTML === event.aircraft) {
+                        option.setAttribute('selected', "")
+                    }
+                })
+            } else if (type === 'class' || type === 'exam') {
+                editForm.querySelector(`#instructor`).querySelectorAll('option').forEach(option => {
+                    if (option.innerHTML === event.instructor) {
+                        option.setAttribute('selected', "")
+                    }
+                })
+                editForm.querySelector(`#student`).querySelectorAll('option').forEach(option => {
+                    if (option.innerHTML === event.student) {
+                        option.setAttribute('selected', "")
+                    }
+                })
+                editForm.querySelector(`#subject`).querySelectorAll('option').forEach(option => {
+                    if (option.innerHTML === event.subject) {
+                        option.setAttribute('selected', "")
+                    }
+                })
+                editForm.querySelector(`#room`).querySelectorAll('option').forEach(option => {
+                    if (option.innerHTML === event.room) {
                         option.setAttribute('selected', "")
                     }
                 })
@@ -476,188 +722,52 @@ function showEditEventOverlay(_id) {
             break loop1;
         }
     }
+    editForm.style.display = 'block';
+    document.getElementById('edit-event-overlay').style.display = "block";
 }
 function hideEditEventOverlay() {
     document.getElementById('edit-event-overlay').style.display = "none";
 }
 function toggleEditEventOverlay() {
+    const _id = String(this);
     if (document.getElementById('edit-event-overlay').style.display === "block") {
-        hideEditEventOverlay();
+        if (editForm.dataset._id === _id) {
+            hideEditEventOverlay();
+        } else {
+            showEditEventOverlay(_id);
+        }
     } else {
-        showEditEventOverlay(this);
+        showEditEventOverlay(_id);
     }
 }
-function editEvent() {
-    this // _id
-}
-const editAvailabilityForm = document.getElementById('edit-availability-form')
-const editFlightForm = document.getElementById('edit-flight-form')
-const editClassForm = document.getElementById('edit-class-form')
-const editExamForm = document.getElementById('edit-exam-form')
-editAvailabilityForm.addEventListener('submit', e => {
+editForm.addEventListener('submit', e => {
     e.preventDefault();
-    console.log(e.target.elements);
     const _id = e.target.dataset._id
-    const startTime = e.target.elements.availabilityStartTime.value
-    const endTime = e.target.elements.availabilityEndTime.value
-    const asset = e.target.elements.asset.value
+    const type = e.target.dataset.type
+    const startTime = e.target.elements.startTime.value
+    const endTime = e.target.elements.endTime.value
     calendarParams.clientDate = new Date()
     const output = {
         _id,
-        type: 'notAvailable',
+        type,
         startTime,
         endTime,
-        asset,
         clientDate: calendarParams.clientDate,
         weekStartDay: calendarParams.weekStartDay
     }
+    if (type === 'availability') {
+        output.type = 'notAvailable'
+        output.asset = e.target.elements.asset.value
+    } else if (type === 'flight') {
+        output.instructor = e.target.elements.instructor.value
+        output.student = e.target.elements.student.value
+        output.aircraft = e.target.elements.aircraft.value
+    } else if (type === 'class' || type === 'exam') {
+        output.instructor = e.target.elements.instructor.value
+        output.student = e.target.elements.student.value
+        output.subject = e.target.elements.subject.value
+        output.room = e.target.elements.room.value
+    }
+    // console.log(output);
     socket.emit('edit_event', output)
 })
-editFlightForm.addEventListener('submit', e => {
-    e.preventDefault();
-    console.log(e.target.elements);
-    const _id = e.target.dataset._id
-    const startTime = e.target.elements.flightStartTime.value
-    const endTime = e.target.elements.flightEndTime.value
-    const aircraft = e.target.elements.aircraft.value
-    const student = e.target.elements.flightStudent.value
-    const instructor = e.target.elements.flightInstructor.value
-    calendarParams.clientDate = new Date()
-    const output = {
-        _id,
-        type: 'flight',
-        startTime,
-        endTime,
-        aircraft,
-        student,
-        instructor,
-        clientDate: calendarParams.clientDate,
-        weekStartDay: calendarParams.weekStartDay
-    }
-    socket.emit('edit_event', output)
-})
-editClassForm.addEventListener('submit', e => {
-    e.preventDefault();
-    console.log(e.target.elements);
-    const _id = e.target.dataset._id
-    const startTime = e.target.elements.classStartTime.value
-    const endTime = e.target.elements.classEndTime.value
-    const student = e.target.elements.classStudent.value
-    const instructor = e.target.elements.classInstructor.value
-    const subject = e.target.elements.classSubject.value
-    const room = e.target.elements.classRoom.value
-    calendarParams.clientDate = new Date()
-    const output = {
-        _id,
-        type: 'class',
-        startTime,
-        endTime,
-        subject,
-        room,
-        student,
-        instructor,
-        clientDate: calendarParams.clientDate,
-        weekStartDay: calendarParams.weekStartDay
-    }
-    socket.emit('edit_event', output)
-})
-editExamForm.addEventListener('submit', e => {
-    e.preventDefault();
-    console.log(e.target.elements);
-    const _id = e.target.dataset._id
-    const startTime = e.target.elements.examStartTime.value
-    const endTime = e.target.elements.examEndTime.value
-    const student = e.target.elements.examStudent.value
-    const instructor = e.target.elements.examInstructor.value
-    const subject = e.target.elements.examSubject.value
-    const room = e.target.elements.examRoom.value
-    calendarParams.clientDate = new Date()
-    const output = {
-        _id,
-        type: 'exam',
-        startTime,
-        endTime,
-        subject,
-        room,
-        student,
-        instructor,
-        clientDate: calendarParams.clientDate,
-        weekStartDay: calendarParams.weekStartDay
-    }
-    socket.emit('edit_event', output)
-})
-
-// AVAILABILITY FORM
-function showAvailability() {
-    document.getElementById('availability-overlay').style.display = "block";
-}
-function hideAvailability() {
-    document.getElementById('availability-overlay').style.display = "none";
-}
-const availabilityForm = document.getElementById('availability-form')
-availabilityForm.addEventListener('submit', e => {
-    e.preventDefault();
-    console.log(e.target.elements);
-    const startTime = e.target.elements.availabilityStartTime.value
-    const endTime = e.target.elements.availabilityEndTime.value
-    const asset = e.target.elements.asset.value
-
-    calendarParams.clientDate = new Date()
-
-    const output = {
-        type: 'notAvailable',
-        startTime,
-        endTime,
-        asset,
-        clientDate: calendarParams.clientDate,
-        weekStartDay: calendarParams.weekStartDay
-    }
-    socket.emit('new_event', output)
-})
-
-const deleteAvailabilityEventButton = document.getElementById('delete_availability_event')
-const deleteFlightEventButton = document.getElementById('delete_flight_event')
-const deleteClassEventButton = document.getElementById('delete_class_event')
-const deleteExamEventButton = document.getElementById('delete_exam_event')
-deleteAvailabilityEventButton.addEventListener('click', e => {
-    e.preventDefault();
-    calendarParams.clientDate = new Date()
-    const outputEvent = {
-        _id: e.target.parentNode.dataset._id,
-        clientDate: calendarParams.clientDate,
-        weekStartDay: calendarParams.weekStartDay
-    }
-    socket.emit('delete_event', outputEvent)
-})
-deleteFlightEventButton.addEventListener('click', e => {
-    e.preventDefault();
-    calendarParams.clientDate = new Date()
-    const outputEvent = {
-        _id: e.target.parentNode.dataset._id,
-        clientDate: calendarParams.clientDate,
-        weekStartDay: calendarParams.weekStartDay
-    }
-    socket.emit('delete_event', outputEvent)
-})
-deleteClassEventButton.addEventListener('click', e => {
-    e.preventDefault();
-    calendarParams.clientDate = new Date()
-    const outputEvent = {
-        _id: e.target.parentNode.dataset._id,
-        clientDate: calendarParams.clientDate,
-        weekStartDay: calendarParams.weekStartDay
-    }
-    socket.emit('delete_event', outputEvent)
-})
-deleteExamEventButton.addEventListener('click', e => {
-    e.preventDefault();
-    calendarParams.clientDate = new Date()
-    const outputEvent = {
-        _id: e.target.parentNode.dataset._id,
-        clientDate: calendarParams.clientDate,
-        weekStartDay: calendarParams.weekStartDay
-    }
-    socket.emit('delete_event', outputEvent)
-})
-
-console.log(deleteFlightEventButton);
