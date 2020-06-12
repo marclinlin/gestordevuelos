@@ -11,7 +11,7 @@ const EventSchema = Schema({
   aircraft: String,
   room: String,
   subject: String,
-  asset: String,
+  asset: Object,
   status: {
     type: Boolean,
     default: false

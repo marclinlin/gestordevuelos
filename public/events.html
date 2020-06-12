@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestor de vuelos</title>
+    <link rel="stylesheet" href="/src/style.css">
+</head>
+
+<body>
+    <div class="navbar">
+        <a href="/"><span>MONTH</span></a>
+        <a href="/users/"><span>USERS</span></a>
+        <a href="/events/"><span>EVENTS</span></a>
+        <a href='#' class='new-event-button'><span>Add event</span></a>
+    </div>
+
+    <!-- New event form -->
+    <div id="new-event-overlay" style="display: none" class="new-event-form">
+        <span class="close-addEvent no-select">X</span>
+        <form id="new-event-form">
+            <input type="submit">
+        </form>
+    </div>
+    <div id="container">
+        <div class="events">
+            <div class="events-header">
+                <!-- <div class="id"><span>Id</span></div> -->
+                <div><span>Type</span></div>
+                <div><span>Start</span></div>
+                <div><span>End</span></div>
+                <div><span>Instructor</span></div>
+                <div><span>Student</span></div>
+                <div><span>Aircraft</span></div>
+                <div><span>Subject</span></div>
+                <div><span>Room</span></div>
+                <div><span>Manage</span></div>
+            </div>
+            <div class="events-content"></div>
+        </div>
+    </div>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="../events.js"></script>
+</body>
+
+</html>

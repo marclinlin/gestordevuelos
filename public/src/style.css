@@ -91,7 +91,7 @@ span[contenteditable="false"] {
 }
 
 .users-content {
-    overflow-y: scroll;
+    overflow-y: auto;
     padding-top: 5px;
     height: calc(100% - 35px);
     background-color: gainsboro;
@@ -340,8 +340,7 @@ ul {list-style-type: none;}
 }
 
 .event.exam {
-    background-color: rgb(255, 138, 123);
-    color: white;
+    background-color: rgb(63, 218, 2);
 }
 
 .event.flight {
@@ -452,4 +451,71 @@ form > .form-field > input[type="submit"] {
     font-size: 1.5rem;
     font-weight: bold;
     cursor: pointer;
+}
+
+.close-addEvent {
+    position: relative;
+    left: 95%;
+    font-size: 1.5rem;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+form > input {
+    margin-right: 10px;
+}
+
+
+
+.events {
+    margin-top: 2rem;
+    box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+    width: 90%;
+    height: 90%;
+    display: inline-block;
+    border-radius: 10px;
+}
+
+.events-content {
+    overflow-y: auto;
+    padding-top: 5px;
+    height: calc(100% - 35px);
+    background-color: gainsboro;
+}
+
+.events-header {
+    display: flex;
+    height: 30px;
+    background-color: lightslategray;
+    color: white;
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+}
+
+.events-header > div {
+    width: 18%;
+    position: relative;
+}
+
+.events-header > div.userId {
+    width: 10%
+}
+
+.events-header > div > span {
+    position: absolute;
+    top: 2px;
+}
+
+.event-list-event {
+    display: flex;
+    border: 1px solid #4a5055;
+    margin-top: -1px;
+}
+
+.event-list-event > div {
+    width: 18%
+}
+
+.event-list-event > div.eventId {
+    width: 10%
 }

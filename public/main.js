@@ -3,17 +3,48 @@ socket.on('message', msg => { console.log(msg); })
 
 
 /* INITIAL DATA */
+
+// CUSTOM
+const labels = ['availability', 'flight', 'class', 'exam'] // Event types
+const instructors = ['Rubén Velázquez', 'Jaime Martín', 'Tomás Losa', 'Javier Arconada']
+const students = ['Marcos Lin', 'David Verdeguer', 'Ahmed al-Kindi', 'Kris Normandale']
+const aircraftList = ['EC-NAQ', 'EC-NEM', 'EC-NFG', 'EC-LLB']
+const subjects = ['Principles of flight', 'Meteorology', 'Mass & Balance', 'Performance', 'Flight Planning and Monitoring']
+const rooms = ['Room 1', 'Room 2', 'Sim room', 'Ops room']
+const formFields = [];
+
+// FIXED
 const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
 const monthNamesShort = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
-
-const labels = ['availability', 'flight', 'class', 'exam']
-const assets = ['Rubén Velázquez', 'Tomás Losa', 'Jaime Martín', 'Marcos Lin', 'David Verdeguer',
-    'Ahmed al-Kindi', 'EC-NAQ', 'EC-NEM', 'Room 1', 'Room 2'];
-const instructors = ['Rubén Velázquez', 'Jaime Martín', 'Tomás Losa']
-const students = ['Marcos Lin', 'David Verdeguer', 'Ahmed al-Kindi']
-const aircraftList = ['EC-NAQ', 'EC-NEM']
-const subjects = ['Principles of flight', 'Meteorology']
-const rooms = ['Room 1', 'Room 2']
+const instructorObjects = []
+for (instructor of instructors) {
+    instructorObjects.push({
+        type: 'instructor',
+        name: instructor
+    })
+}
+const studentObjects = []
+for (student of students) {
+    studentObjects.push({
+        type: 'student',
+        name: student
+    })
+}
+const aircraftObjects = []
+for (aircraft of aircraftList) {
+    aircraftObjects.push({
+        type: 'aircraft',
+        name: aircraft
+    })
+}
+const roomObjects = []
+for (room of rooms) {
+    roomObjects.push({
+        type: 'room',
+        name: room
+    })
+}
+const assets = instructorObjects.concat(studentObjects).concat(aircraftObjects).concat(roomObjects)
 
 
 /* GET MONTH CALENDAR */
@@ -92,6 +123,7 @@ socket.on('month_calendar', input => {
 
     // Add event button
     document.getElementById('new-event').addEventListener('click', () => {
+        hideEditEventOverlay();
         if (document.getElementById('new-event-overlay').style.display === 'block') {
             hideNewEvent();
         } else {
@@ -154,7 +186,7 @@ function renderEvents(events) {
             }
         }
         if (newEvent.classList.contains('notAvailable')) {
-            newEvent.innerHTML = `${startHours}:${startMinutes} - ${endHours}:${endMinutes}: ${event.asset}`
+            newEvent.innerHTML = `${startHours}:${startMinutes} - ${endHours}:${endMinutes}: ${event.asset.name}`
         } else {
             newEvent.innerHTML = `${startHours}:${startMinutes}`
         }
@@ -240,7 +272,7 @@ function addEventForm() {
                 newField1.innerHTML = `
                 <div class="label">Asset:</div>
                 <div class="input size50">
-                    <select id="asset" class="styled">
+                    <select id="asset" class="styled" multiple>
                     </select>
                 </div>
                 `;
@@ -249,7 +281,7 @@ function addEventForm() {
                 assetInput.innerHTML = `<option selected>Select asset</option>`
                 for (const asset of assets) {
                     const newOption = document.createElement('option')
-                    newOption.innerHTML = asset;
+                    newOption.innerHTML = asset.name;
                     assetInput.appendChild(newOption)
                 }
             } else if (type === 'flight') {
@@ -259,7 +291,7 @@ function addEventForm() {
                 newField1.innerHTML = `
                 <div class="label">Instructor:</div>
                 <div class="input size50">
-                    <select id="instructor" class="styled">
+                    <select id="instructor" class="styled" multiple>
                     </select>
                 </div>
                 `;
@@ -278,7 +310,7 @@ function addEventForm() {
                 newField2.innerHTML = `
                 <div class="label">Student:</div>
                 <div class="input size50">
-                    <select id="student" class="styled">
+                    <select id="student" class="styled" multiple>
                     </select>
                 </div>
                 `;
@@ -297,7 +329,7 @@ function addEventForm() {
                 newField3.innerHTML = `
                 <div class="label">Aircraft:</div>
                 <div class="input size50">
-                    <select id="aircraft" class="styled">
+                    <select id="aircraft" class="styled" multiple>
                     </select>
                 </div>
                 `;
@@ -316,7 +348,7 @@ function addEventForm() {
                 newField1.innerHTML = `
                 <div class="label">Instructor:</div>
                 <div class="input size50">
-                    <select id="instructor" class="styled">
+                    <select id="instructor" class="styled" multiple>
                     </select>
                 </div>
                 `;
@@ -335,7 +367,7 @@ function addEventForm() {
                 newField2.innerHTML = `
                 <div class="label">Student:</div>
                 <div class="input size50">
-                    <select id="student" class="styled">
+                    <select id="student" class="styled" multiple>
                     </select>
                 </div>
                 `;
@@ -354,7 +386,7 @@ function addEventForm() {
                 newField3.innerHTML = `
                 <div class="label">Subject:</div>
                 <div class="input size50">
-                    <select id="subject" class="styled">
+                    <select id="subject" class="styled" multiple>
                     </select>
                 </div>
                 `;
@@ -373,7 +405,7 @@ function addEventForm() {
                 newField4.innerHTML = `
                 <div class="label">Room:</div>
                 <div class="input size50">
-                    <select id="room" class="styled">
+                    <select id="room" class="styled" multiple>
                     </select>
                 </div>
                 `;
@@ -454,6 +486,7 @@ function addEventForm() {
 // EDIT EVENTS FORMS
 const editForm = document.getElementById('edit-event-form')
 function showEditEventOverlay(_id) {
+    hideNewEvent();
     addForm.querySelectorAll('div').forEach(node => { node.parentNode.removeChild(node) })
     addForm.querySelectorAll('input').forEach(node => { node.parentNode.removeChild(node) })
     const newEventOverlay = document.getElementById('new-event-overlay')
@@ -470,7 +503,6 @@ function showEditEventOverlay(_id) {
     editForm.querySelectorAll('input[type="submit"]').forEach(node => { node.parentNode.removeChild(node); })
     editForm.querySelectorAll('input[type="button"]').forEach(node => { node.parentNode.removeChild(node); })
     const type = document.querySelector(`div[data-_id="${_id}"]`).classList[1] === 'notAvailable' ? 'availability' : document.querySelector(`div[data-_id="${_id}"]`).classList[1]
-    console.log(type);
     editForm.setAttribute('data-type', type)
 
     if (!editForm.querySelector('#startTime') && !editForm.querySelector('#endTime')) {
@@ -500,7 +532,7 @@ function showEditEventOverlay(_id) {
         newField1.innerHTML = `
         <div class="label">Asset:</div>
         <div class="input size50">
-            <select id="asset" class="styled">
+            <select id="asset" class="styled" multiple>
             </select>
         </div>
         `;
@@ -508,7 +540,7 @@ function showEditEventOverlay(_id) {
         const assetInput = document.getElementById('asset');
         for (const asset of assets) {
             const newOption = document.createElement('option')
-            newOption.innerHTML = asset;
+            newOption.innerHTML = asset.name;
             assetInput.appendChild(newOption)
         }
     } else if (type === 'flight') {
@@ -518,7 +550,7 @@ function showEditEventOverlay(_id) {
         newField1.innerHTML = `
         <div class="label">Instructor:</div>
         <div class="input size50">
-            <select id="instructor" class="styled">
+            <select id="instructor" class="styled" multiple>
             </select>
         </div>
         `;
@@ -536,7 +568,7 @@ function showEditEventOverlay(_id) {
         newField2.innerHTML = `
         <div class="label">Student:</div>
         <div class="input size50">
-            <select id="student" class="styled">
+            <select id="student" class="styled" multiple>
             </select>
         </div>
         `;
@@ -554,7 +586,7 @@ function showEditEventOverlay(_id) {
         newField3.innerHTML = `
         <div class="label">Aircraft:</div>
         <div class="input size50">
-            <select id="aircraft" class="styled">
+            <select id="aircraft" class="styled" multiple>
             </select>
         </div>
         `;
@@ -572,7 +604,7 @@ function showEditEventOverlay(_id) {
         newField1.innerHTML = `
         <div class="label">Instructor:</div>
         <div class="input size50">
-            <select id="instructor" class="styled">
+            <select id="instructor" class="styled" multiple>
             </select>
         </div>
         `;
@@ -582,7 +614,6 @@ function showEditEventOverlay(_id) {
             const newOption = document.createElement('option')
             newOption.innerHTML = instructor;
             instructorInput.appendChild(newOption)
-            console.log(`Adding instructor`);
         }
 
         // Student
@@ -591,7 +622,7 @@ function showEditEventOverlay(_id) {
         newField2.innerHTML = `
         <div class="label">Student:</div>
         <div class="input size50">
-            <select id="student" class="styled">
+            <select id="student" class="styled" multiple>
             </select>
         </div>
         `;
@@ -609,7 +640,7 @@ function showEditEventOverlay(_id) {
         newField3.innerHTML = `
         <div class="label">Subject:</div>
         <div class="input size50">
-            <select id="subject" class="styled">
+            <select id="subject" class="styled" multiple>
             </select>
         </div>
         `;
@@ -627,7 +658,7 @@ function showEditEventOverlay(_id) {
         newField4.innerHTML = `
         <div class="label">Room:</div>
         <div class="input size50">
-            <select id="room" class="styled">
+            <select id="room" class="styled" multiple>
             </select>
         </div>
         `;
@@ -645,8 +676,12 @@ function showEditEventOverlay(_id) {
     const newDeleteButton = document.createElement('input')
     newDeleteButton.setAttribute('type', 'button')
     newDeleteButton.setAttribute('value', 'Delete')
+    const newDiscardButton = document.createElement('input')
+    newDiscardButton.setAttribute('type', 'button')
+    newDiscardButton.setAttribute('value', 'Discard')
     editForm.appendChild(newSubmitButton)
     editForm.appendChild(newDeleteButton)
+    editForm.appendChild(newDiscardButton)
     editForm.querySelector('input[value="Delete"]').addEventListener('click', e => {
         e.preventDefault();
         calendarParams.clientDate = new Date()
@@ -655,8 +690,12 @@ function showEditEventOverlay(_id) {
             clientDate: calendarParams.clientDate,
             weekStartDay: calendarParams.weekStartDay
         }
-        console.log(`Deleting event ${outputEvent._id}`);
+        // console.log(`Deleting event ${outputEvent._id}`);
         socket.emit('delete_event', outputEvent)
+    })
+    editForm.querySelector('input[value="Discard"]').addEventListener('click', e => {
+        e.preventDefault();
+        hideEditEventOverlay();
     })
 
     // AUTO FILL FIELDS WITH EVENT DATA:
@@ -757,7 +796,20 @@ editForm.addEventListener('submit', e => {
     }
     if (type === 'availability') {
         output.type = 'notAvailable'
-        output.asset = e.target.elements.asset.value
+        let type = undefined;
+        if (instructors.includes(e.target.elements.asset.value)) {
+            type = 'instructor'
+        } else if (students.includes(e.target.elements.asset.value)) {
+            type = 'student'
+        } else if (aircraftList.includes(e.target.elements.asset.value)) {
+            type = 'aircraft'
+        } else if (rooms.includes(e.target.elements.asset.value)) {
+            type = 'room'
+        }
+        output.asset = {
+            type,
+            name: e.target.elements.asset.value
+        }
     } else if (type === 'flight') {
         output.instructor = e.target.elements.instructor.value
         output.student = e.target.elements.student.value

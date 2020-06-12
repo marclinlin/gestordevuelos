@@ -14,10 +14,6 @@ const server = http.createServer(app)
 const io = socketio(server)
 require('./database')
 
-// Routes
-const users = require('./routes/users')
-app.use('/users', users)
-
 // Settings
 app.set('port', process.env.PORT || 3000)
 
@@ -26,6 +22,11 @@ app.set('port', process.env.PORT || 3000)
 // Global Variables
 
 // Routes
+const users = require('./routes/users')
+app.use('/users', users)
+
+const events = require('./routes/events')
+app.use('/events', events)
 
 // Static Files
 app.use(express.static(path.join(path.resolve(path.dirname('')), 'public')));
@@ -44,6 +45,7 @@ io.on('connection', socket => {
 
     // Send events
     const sendEvents = async (clientDate, weekStartDay) => {
+        clientDate = new Date(clientDate)
         // get client date and first day of the week
         const output = calendarDaysMonth(clientDate, weekStartDay)
         const events = await Event.find(
@@ -182,6 +184,10 @@ io.on('connection', socket => {
         // console.log(available);
         return available;
     }
+
+    socket.on('get_events', input => {
+        sendEvents(input.clientDate, input.weekStartDay)
+    })
 
 
     // USERS
