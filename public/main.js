@@ -466,8 +466,21 @@ function addEventForm() {
         }
 
         if (type === 'availability') {
+            let assetType = undefined;
+            if (instructors.includes(e.target.elements.asset.value)) {
+                assetType = 'instructor'
+            } else if (students.includes(e.target.elements.asset.value)) {
+                assetType = 'student'
+            } else if (aircraftList.includes(e.target.elements.asset.value)) {
+                assetType = 'aircraft'
+            } else if (rooms.includes(e.target.elements.asset.value)) {
+                assetType = 'room'
+            }
             output.type = 'notAvailable'
-            output.asset = e.target.elements.asset.value
+            output.asset = {
+                name: e.target.elements.asset.value,
+                type: assetType
+            }
         } else if (type === 'flight') {
             output.instructor = e.target.elements.instructor.value
             output.student = e.target.elements.student.value
@@ -716,7 +729,7 @@ function showEditEventOverlay(_id) {
             })
             if (type === 'availability') {
                 editForm.querySelector(`#asset`).querySelectorAll('option').forEach(option => {
-                    if (option.innerHTML === event.asset) {
+                    if (option.innerHTML === event.asset.name) {
                         option.setAttribute('selected', "")
                     }
                 })

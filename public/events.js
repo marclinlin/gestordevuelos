@@ -138,7 +138,7 @@ function editEvent() {
 }
 function deleteEvent() {
     socket.emit('delete_event', this)
-    console.log(`Deleting event ${this.id}`);
+    console.log(`Deleting event ${this._id}`);
 }
 
 // INIT PAGE
@@ -151,12 +151,11 @@ socket.on('update_events', input => {
 })
 function renderEvents(events) {
     const eventsContainer = document.querySelector('div.events-content')
-    eventsContainer.querySelectorAll('div.event').forEach(event => { event.parentNode.removeChild(event) })
+    eventsContainer.querySelectorAll('div.event-list-event').forEach(event => { event.parentNode.removeChild(event) })
     events.forEach(event => {
         const newEvent = document.createElement('div')
         newEvent.classList.add('event-list-event')
-        newEvent.setAttribute('id', event.id)
-        newEvent.setAttribute('data-_id', event._id)
+        newEvent.setAttribute('id', event._id)
         const startTime = new Date(event.startTime).toLocaleString('es-ES', {
             dateStyle: 'short', // full, long, medium, short
             timeStyle: 'short'
@@ -247,16 +246,18 @@ function renderEvents(events) {
             `;
         }
         eventsContainer.appendChild(newEvent)
-        const currentEvent = document.getElementById(event.id)
+        const currentEvent = document.getElementById(event._id)
         const manageCurrentEvent = currentEvent.querySelector('.manage-icons')
         const editCurrentEvent = manageCurrentEvent.querySelector('.edit-event')
         const deleteCurrentEvent = manageCurrentEvent.querySelector('.delete-event')
-        const bindedObject = {
+        calendarParams.clientDate = new Date()
+        const outputEvent = {
             _id: event._id,
-            id: event.id
+            clientDate: calendarParams.clientDate,
+            weekStartDay: calendarParams.weekStartDay
         }
-        editCurrentEvent.addEventListener('click', editEvent.bind(bindedObject))
-        deleteCurrentEvent.addEventListener('click', deleteEvent.bind(bindedObject))
+        editCurrentEvent.addEventListener('click', editEvent.bind(outputEvent))
+        deleteCurrentEvent.addEventListener('click', deleteEvent.bind(outputEvent))
     });
     closeAddEvent();
 }
