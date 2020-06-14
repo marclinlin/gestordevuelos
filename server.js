@@ -13,6 +13,7 @@ const app = express()
 const server = http.createServer(app)
 const io = socketio(server)
 require('./database')
+app.use(express.json()) //to be able to get information from the body in a post 
 
 // Settings
 app.set('port', process.env.PORT || 3000)
@@ -27,6 +28,9 @@ app.use('/users', users)
 
 const events = require('./routes/events')
 app.use('/events', events)
+
+const login = require('./routes/login')
+app.use('/login', login)
 
 // Static Files
 app.use(express.static(path.join(path.resolve(path.dirname('')), 'public')));

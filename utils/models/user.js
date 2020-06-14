@@ -9,7 +9,7 @@ const UserSchema = Schema({
   // firstName: String,
   // lastName: String,
   email: String,
-  occupied: Array,
+  password: String,
 })
 
 
