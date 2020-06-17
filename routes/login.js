@@ -26,7 +26,7 @@ router.post('/', async (req, res, next) => {
             const userdata= {name:username, role: user.role}
 
             const accessToken = jwt.sign(userdata, 'shhh')
-            res.cookie('jwt', accessToken, { httpOnly: true, secure: true}).sendFile(path.join(__dirname, '..', '/public/events.html')) //TODO: add the correct html
+            res.cookie('jwt', accessToken, { httpOnly: true, secure: false}).sendFile(path.join(__dirname, '..', '/public/events.html')) //TODO: add the correct html
         } else{
             console.log('error')
         }
