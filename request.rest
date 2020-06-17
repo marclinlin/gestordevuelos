@@ -1,0 +1,13 @@
+POST http://localhost:3000/login
+Content-Type: application/json
+
+{
+    "username": "David",
+    "password": "1234"
+}
+
+###
+
+GET http://localhost:3000/login
+
+Set-Cookie: jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoiRGF2aWQiLCJyb2xlIjoiYWRtaW4iLCJpYXQiOjE1OTI0MTU1OTd9.S24lS0oO_aVL2glI1JpVCJVoB5YodpShyLnHMYObyXA; Path=/; HttpOnly; Secure
