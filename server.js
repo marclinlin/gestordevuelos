@@ -5,7 +5,10 @@ const socketio = require('socket.io')
 const calendarDaysMonth = require('./utils/functions/functions.js')
 const Event = require('./utils/models/event.js')
 const User = require('./utils/models/user.js')
-const mongoose = require('mongoose');
+const authenticateToken = require('./utils/functions/autenticateToken')
+const redirectIndex = require('./utils/functions/redirectIndex')
+const bcrypt = require('bcrypt')
+
 
 
 // Initialization
@@ -23,14 +26,18 @@ app.set('port', process.env.PORT || 3000)
 // Global Variables
 
 // Routes
+const login = require('./routes/login')
+app.use('/login',redirectIndex, login)
+
 const users = require('./routes/users')
-app.use('/users', users)
+app.use('/users', authenticateToken, users)
 
 const events = require('./routes/events')
-app.use('/events', events)
+app.use('/events', authenticateToken, events)
 
-const login = require('./routes/login')
-app.use('/login', login)
+app.get('/', authenticateToken, (req,res) =>  res.sendFile(path.join(__dirname, '/public/index.html')))
+
+
 
 // Static Files
 app.use(express.static(path.join(path.resolve(path.dirname('')), 'public')));
@@ -230,6 +237,8 @@ io.on('connection', socket => {
         // user.firstName = input.name
         // user.lastName = input.lastName
         user.email = input.email
+        // const hashedPassword = await bcrypt.hash(input.password, 10)
+        // user.password = hashedPassword
         await user.save()
         socket.emit('message', 'User saved to the DB')
         console.log('User saved to the DB')

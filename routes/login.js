@@ -3,14 +3,14 @@ const router = express.Router();
 const path = require('path')
 const User = require('../utils/models/user.js')
 const jwt = require('jsonwebtoken')
-const authenticateToken = require('../utils/functions/autenticateToken')
+const bycript = require('bcrypt')
 
 router.use(express.json())
 router.use(express.urlencoded({extended: true}))
 
 // Manage
 router.get('/', (req, res, next) => {
-    res.sendFile(path.join(__dirname, '..', '/public/login.html')) //TODO: add the correct html
+    res.sendFile(path.join(__dirname, '..', '/public/login.html')) 
 })
 
 router.post('/', async (req, res, next) => {
@@ -20,19 +20,21 @@ router.post('/', async (req, res, next) => {
     const user = await User.findOne({ name: username })
     if(!user) return console.log ('User does not exist')
     if(user) {
-        if ( user.name === username || user.password === password){
+        if ( user.name === username && user.password === password){ // await bycript.compare(user.password, password)
             
             console.log('Login successfully')
-            const userdata= {name:username, role: user.role}
+            const userdata= {name: user.name, role: user.role}
 
             const accessToken = jwt.sign(userdata, 'shhh')
-            res.cookie('jwt', accessToken, { httpOnly: true, secure: false}).sendFile(path.join(__dirname, '..', '/public/events.html')) //TODO: add the correct html
+            res.cookie('jwt', accessToken, { httpOnly: true, secure: false}).redirect('/')
         } else{
             console.log('error')
         }
     }
 
 })
+
+router.post('/logout', (req, res) => res.clearCookie('jwt'))
 
 
 

@@ -5,7 +5,8 @@ const authenticateToken = require('../utils/functions/autenticateToken')
 
 
 // Manage
-router.get('/',authenticateToken, (req, res, next) => {
+router.get('/', (req, res, next) => {
+    console.log(req.user)
     res.sendFile(path.join(__dirname, '..', '/public/events.html'));
 })
 
