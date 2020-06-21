@@ -27,7 +27,7 @@ app.set('port', process.env.PORT || 3000)
 
 // Routes
 const login = require('./routes/login')
-app.use('/login',redirectIndex, login)
+app.use('/login', redirectIndex, login)
 
 const users = require('./routes/users')
 app.use('/users', authenticateToken, users)
@@ -35,7 +35,7 @@ app.use('/users', authenticateToken, users)
 const events = require('./routes/events')
 app.use('/events', authenticateToken, events)
 
-app.get('/', authenticateToken, (req,res) =>  res.sendFile(path.join(__dirname, '/public/index.html')))
+app.get('/', authenticateToken, (req, res) => res.sendFile(path.join(__dirname, '/public/index.html')))
 
 
 

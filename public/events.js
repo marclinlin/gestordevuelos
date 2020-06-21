@@ -1,7 +1,49 @@
 const socket = io.connect('http://localhost:3000/');
 socket.on('message', msg => { console.log(msg); })
 
+/* INITIAL DATA */
+
+// CUSTOM
+const labels = ['availability', 'flight', 'class', 'exam'] // Event types
+const instructors = ['Rubén Velázquez', 'Jaime Martín', 'Tomás Losa', 'Javier Arconada']
+const students = ['Marcos Lin', 'David Verdeguer', 'Ahmed al-Kindi', 'Kris Normandale']
+const aircraftList = ['EC-NAQ', 'EC-NEM', 'EC-NFG', 'EC-LLB']
+const subjects = ['Principles of flight', 'Meteorology', 'Mass & Balance', 'Performance', 'Flight Planning and Monitoring']
+const rooms = ['Room 1', 'Room 2', 'Sim room', 'Ops room']
+const formFields = [];
+
+// FIXED
+const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
 const monthNamesShort = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+const instructorObjects = []
+for (instructor of instructors) {
+    instructorObjects.push({
+        type: 'instructor',
+        name: instructor
+    })
+}
+const studentObjects = []
+for (student of students) {
+    studentObjects.push({
+        type: 'student',
+        name: student
+    })
+}
+const aircraftObjects = []
+for (aircraft of aircraftList) {
+    aircraftObjects.push({
+        type: 'aircraft',
+        name: aircraft
+    })
+}
+const roomObjects = []
+for (room of rooms) {
+    roomObjects.push({
+        type: 'room',
+        name: room
+    })
+}
+const assets = instructorObjects.concat(studentObjects).concat(aircraftObjects).concat(roomObjects)
 
 const calendarParams = {
     clientDate: new Date(),
@@ -12,34 +54,295 @@ const calendarParams = {
 function openAddEvent() {
     document.getElementById('new-event-overlay').style.display = 'block'
     addEventButton.removeEventListener('click', openAddEvent)
+    addEventButton.addEventListener('click', closeAddEvent)
 }
 function closeAddEvent() {
     document.getElementById('new-event-overlay').style.display = 'none'
+    addEventButton.removeEventListener('click', closeAddEvent)
     addEventButton.addEventListener('click', openAddEvent)
 }
-const addEventButton = document.querySelector('.new-event-button')
+const addEventButton = document.getElementById('new-event-button')
 addEventButton.addEventListener('click', openAddEvent)
-const addEventForm = document.getElementById('new-event-form')
-addEventForm.addEventListener('submit', e => {
-    e.preventDefault();
-    console.log(e.target.elements);
+const newEventForm = document.getElementById('new-event-form')
+/* const closeAddEventButton = document.querySelector('.close-addEvent')
+closeAddEventButton.addEventListener('click', closeAddEvent) */
 
-    const id = e.target.elements.id.value
-    const name = e.target.elements.name.value
-    const role = e.target.elements.role.value
-    const email = e.target.elements.email.value
 
-    const output = {
-        id,
-        name,
-        role,
-        email
+function addEventForm() {
+    /* editForm.querySelectorAll('div').forEach(node => { node.parentNode.removeChild(node) })
+    editForm.querySelectorAll('input').forEach(node => { node.parentNode.removeChild(node) }) */
+    /* ADD EVENT FORMS */
+    const radios = document.getElementsByName('type-radio');
+    let type = undefined;
+
+    // Show forms
+    for (const radio of radios) {
+        radio.onclick = function () {
+            type = this.value;
+            newEventForm.querySelectorAll('div.form-field').forEach(field => {
+                if (!field.querySelector('#startTime') && !field.querySelector('#endTime')) {
+                    field.parentNode.removeChild(field)
+                }
+            })
+            newEventForm.querySelectorAll('input[type="submit"]').forEach(node => { node.parentNode.removeChild(node) })
+            const overlay = document.getElementById('new-event-overlay');
+
+            if (overlay.classList[0] == 'before-click') {
+                overlay.classList.remove('before-click')
+                overlay.classList.add('after-click')
+            }
+
+            for (const label of labels) {
+                const labelElement = document.getElementById(`${label}-label`)
+                if (type === label) {
+                    labelElement.classList.add('active')
+                } else {
+                    labelElement.classList.remove('active')
+                }
+            }
+
+            if (!newEventForm.querySelector('#startTime') && !newEventForm.querySelector('#endTime')) {
+                // Start time
+                const newFieldST = document.createElement('div')
+                newFieldST.classList.add('form-field')
+                newFieldST.innerHTML = `
+                <div class="label">Start time</div>
+                <input type="datetime-local" id="startTime" name="startTime">
+                `;
+                newEventForm.appendChild(newFieldST)
+
+                // End time
+                const newFieldET = document.createElement('div')
+                newFieldET.classList.add('form-field')
+                newFieldET.innerHTML = `
+                <div class="label">End time</div>
+                <input type="datetime-local" id="endTime" name="endTime">
+                `;
+                newEventForm.appendChild(newFieldET)
+            }
+
+            if (type === 'availability') {
+                // Asset option
+                const newField1 = document.createElement('div')
+                newField1.classList.add('form-field')
+                newField1.innerHTML = `
+                <div class="label">Asset:</div>
+                <div class="input size50">
+                    <select id="asset" class="styled" multiple>
+                    </select>
+                </div>
+                `;
+                newEventForm.appendChild(newField1)
+                const assetInput = document.getElementById('asset');
+                assetInput.innerHTML = `<option selected>Select asset</option>`
+                for (const asset of assets) {
+                    const newOption = document.createElement('option')
+                    newOption.innerHTML = asset.name;
+                    assetInput.appendChild(newOption)
+                }
+            } else if (type === 'flight') {
+                // Instructor
+                const newField1 = document.createElement('div')
+                newField1.classList.add('form-field')
+                newField1.innerHTML = `
+                <div class="label">Instructor:</div>
+                <div class="input size50">
+                    <select id="instructor" class="styled" multiple>
+                    </select>
+                </div>
+                `;
+                newEventForm.appendChild(newField1)
+                const instructorInput = document.getElementById('instructor');
+                instructorInput.innerHTML = `<option selected>Select instructor</option>`
+                for (const instructor of instructors) {
+                    const newOption = document.createElement('option')
+                    newOption.innerHTML = instructor;
+                    instructorInput.appendChild(newOption)
+                }
+
+                // Student
+                const newField2 = document.createElement('div')
+                newField2.classList.add('form-field')
+                newField2.innerHTML = `
+                <div class="label">Student:</div>
+                <div class="input size50">
+                    <select id="student" class="styled" multiple>
+                    </select>
+                </div>
+                `;
+                newEventForm.appendChild(newField2)
+                const studentInput = document.getElementById('student');
+                studentInput.innerHTML = `<option selected>Select student</option>`
+                for (const student of students) {
+                    const newOption = document.createElement('option')
+                    newOption.innerHTML = student;
+                    studentInput.appendChild(newOption)
+                }
+
+                // Aircraft
+                const newField3 = document.createElement('div')
+                newField3.classList.add('form-field')
+                newField3.innerHTML = `
+                <div class="label">Aircraft:</div>
+                <div class="input size50">
+                    <select id="aircraft" class="styled" multiple>
+                    </select>
+                </div>
+                `;
+                newEventForm.appendChild(newField3)
+                const aircraftInput = document.getElementById('aircraft');
+                aircraftInput.innerHTML = `<option selected>Select aircraft</option>`
+                for (const aircraft of aircraftList) {
+                    const newOption = document.createElement('option')
+                    newOption.innerHTML = aircraft;
+                    aircraftInput.appendChild(newOption)
+                }
+            } else if (type === 'class' || type === 'exam') {
+                // Instructor
+                const newField1 = document.createElement('div')
+                newField1.classList.add('form-field')
+                newField1.innerHTML = `
+                <div class="label">Instructor:</div>
+                <div class="input size50">
+                    <select id="instructor" class="styled" multiple>
+                    </select>
+                </div>
+                `;
+                newEventForm.appendChild(newField1)
+                const instructorInput = document.getElementById('instructor');
+                instructorInput.innerHTML = `<option selected>Select instructor</option>`
+                for (const instructor of instructors) {
+                    const newOption = document.createElement('option')
+                    newOption.innerHTML = instructor;
+                    instructorInput.appendChild(newOption)
+                }
+
+                // Student
+                const newField2 = document.createElement('div')
+                newField2.classList.add('form-field')
+                newField2.innerHTML = `
+                <div class="label">Student:</div>
+                <div class="input size50">
+                    <select id="student" class="styled" multiple>
+                    </select>
+                </div>
+                `;
+                newEventForm.appendChild(newField2)
+                const studentInput = document.getElementById('student');
+                studentInput.innerHTML = `<option selected>Select student</option>`
+                for (const student of students) {
+                    const newOption = document.createElement('option')
+                    newOption.innerHTML = student;
+                    studentInput.appendChild(newOption)
+                }
+
+                // Subject
+                const newField3 = document.createElement('div')
+                newField3.classList.add('form-field')
+                newField3.innerHTML = `
+                <div class="label">Subject:</div>
+                <div class="input size50">
+                    <select id="subject" class="styled" multiple>
+                    </select>
+                </div>
+                `;
+                newEventForm.appendChild(newField3)
+                const subjectInput = document.getElementById('subject');
+                subjectInput.innerHTML = `<option selected>Select subject</option>`
+                for (const subject of subjects) {
+                    const newOption = document.createElement('option')
+                    newOption.innerHTML = subject;
+                    subjectInput.appendChild(newOption)
+                }
+
+                // Room
+                const newField4 = document.createElement('div')
+                newField4.classList.add('form-field')
+                newField4.innerHTML = `
+                <div class="label">Room:</div>
+                <div class="input size50">
+                    <select id="room" class="styled" multiple>
+                    </select>
+                </div>
+                `;
+                newEventForm.appendChild(newField4)
+                const roomInput = document.getElementById('room');
+                roomInput.innerHTML = `<option selected>Select room</option>`
+                for (const room of rooms) {
+                    const newOption = document.createElement('option')
+                    newOption.innerHTML = room;
+                    roomInput.appendChild(newOption)
+                }
+            }
+            const newSubmitButton = document.createElement('input')
+            newSubmitButton.setAttribute('type', 'submit')
+            newSubmitButton.setAttribute('value', 'Add')
+            newEventForm.appendChild(newSubmitButton)
+            newEventForm.style.display = 'block';
+        }
     }
-    console.log(output);
-    socket.emit('new_event', output)
-})
-const closeAddEventButton = document.querySelector('.close-addEvent')
-closeAddEventButton.addEventListener('click', closeAddEvent)
+
+    newEventForm.addEventListener('submit', e => {
+        e.preventDefault();
+        const startTime = e.target.elements.startTime.value
+        const endTime = e.target.elements.endTime.value
+        calendarParams.clientDate = new Date()
+        const output = {
+            type,
+            startTime,
+            endTime,
+            clientDate: calendarParams.clientDate,
+            weekStartDay: calendarParams.weekStartDay
+        }
+
+        if (type === 'availability') {
+            let assetType = undefined;
+            if (instructors.includes(e.target.elements.asset.value)) {
+                assetType = 'instructor'
+            } else if (students.includes(e.target.elements.asset.value)) {
+                assetType = 'student'
+            } else if (aircraftList.includes(e.target.elements.asset.value)) {
+                assetType = 'aircraft'
+            } else if (rooms.includes(e.target.elements.asset.value)) {
+                assetType = 'room'
+            }
+            output.type = 'notAvailable'
+            output.asset = {
+                name: e.target.elements.asset.value,
+                type: assetType
+            }
+        } else if (type === 'flight') {
+            output.instructor = e.target.elements.instructor.value
+            output.student = e.target.elements.student.value
+            output.aircraft = e.target.elements.aircraft.value
+        } else if (type === 'class' || type === 'exam') {
+            output.instructor = e.target.elements.instructor.value
+            output.student = e.target.elements.student.value
+            output.subject = e.target.elements.subject.value
+            output.room = e.target.elements.room.value
+        }
+        console.log(output);
+        socket.emit('new_event', output)
+    })
+}
+addEventForm();
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 // EDIT/DELETE EVENT
 function editEvent() {

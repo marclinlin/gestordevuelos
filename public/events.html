@@ -13,14 +13,28 @@
         <a href="/"><span>MONTH</span></a>
         <a href="/users/"><span>USERS</span></a>
         <a href="/events/"><span>EVENTS</span></a>
-        <a href='#' class='new-event-button'><span>Add event</span></a>
+        <a href='#' id='new-event-button'><span>Add event</span></a>
+        <a href="/login/logout/" id="logout-button"><span>LOGOUT</span></a>
     </div>
 
     <!-- New event form -->
-    <div id="new-event-overlay" style="display: none" class="new-event-form">
-        <span class="close-addEvent no-select">X</span>
-        <form id="new-event-form">
-            <input type="submit">
+    <div id="new-event-overlay" style="display: none" class="before-click">
+        <div id="type-buttons">
+            <div style="display: none">
+                <input type="radio" id="availability" name="type-radio" value="availability"> <!-- checked -->
+                <input type="radio" id="flight" name="type-radio" value="flight">
+                <input type="radio" id="class" name="type-radio" value="class">
+                <input type="radio" id="exam" name="type-radio" value="exam">
+            </div>
+            <div class="event-type">
+                <label id="availability-label" for="availability" class="before-click"><span>Availability</span></label>
+                <label id="flight-label" for="flight" class="before-click"><span>Flight</span></label>
+                <label id="class-label" for="class" class="before-click"><span>Class</span></label>
+                <label id="exam-label" for="exam" class="before-click"><span>Exam</span></label>
+            </div>
+        </div>
+
+        <form id="new-event-form" style="display: none">
         </form>
     </div>
     <div id="container">

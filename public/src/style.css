@@ -427,10 +427,6 @@ form > .form-field > input[type="submit"] {
     width: 100%
 }
 
-.new-user-button {
-    left: 50%;
-}
-
 #new-user-overlay {
     width: 25%;
     /* min-height: 450px; */

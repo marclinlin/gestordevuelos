@@ -8,12 +8,14 @@ const monthNamesShort = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug',
 function openAddUser() {
     document.getElementById('new-user-overlay').style.display = 'block'
     addUserButton.removeEventListener('click', openAddUser)
+    addUserButton.addEventListener('click', closeAddUser)
 }
 function closeAddUser() {
     document.getElementById('new-user-overlay').style.display = 'none'
+    addUserButton.removeEventListener('click', closeAddUser)
     addUserButton.addEventListener('click', openAddUser)
 }
-const addUserButton = document.querySelector('.new-user-button')
+const addUserButton = document.getElementById('new-user-button')
 addUserButton.addEventListener('click', openAddUser)
 const addUserForm = document.getElementById('new-user-form')
 addUserForm.addEventListener('submit', e => {
