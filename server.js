@@ -5,6 +5,7 @@ const socketio = require('socket.io')
 const calendarDaysMonth = require('./utils/functions/functions.js')
 const Event = require('./utils/models/event.js')
 const User = require('./utils/models/user.js')
+const Aircraft = require('./utils/models/aircraft.js')
 const authenticateToken = require('./utils/functions/autenticateToken')
 const redirectIndex = require('./utils/functions/redirectIndex')
 const bcrypt = require('bcrypt')
@@ -34,6 +35,9 @@ app.use('/users', authenticateToken, users)
 
 const events = require('./routes/events')
 app.use('/events', authenticateToken, events)
+
+const aircraft = require('./routes/aircraft')
+app.use('/aircraft', authenticateToken, aircraft)
 
 app.get('/', authenticateToken, (req, res) => res.sendFile(path.join(__dirname, '/public/index.html')))
 
@@ -223,9 +227,16 @@ io.on('connection', socket => {
         socket.emit('message', 'Received users')
         console.log('Sending users')
     }
+    const sendAircraft = async function () {
+        const aircraft = await Aircraft.find()
+        socket.emit('users_list', aircraft)
+        socket.emit('message', 'Received aircraft')
+        console.log('Sending aircraft')
+    }
     socket.on('get_instructors', sendInstructors)
     socket.on('get_students', sendStudents)
     socket.on('get_users', sendUsers)
+    socket.on('get_aircraft', sendAircraft)
 
     // Add user
     const addUser = async function (input) {
@@ -246,6 +257,18 @@ io.on('connection', socket => {
         sendUsers();
     }
     socket.on('new_user', input => { addUser(input) })
+
+    // Add aircraft
+    const addAircraft = async function (input) {
+        const aircraft = new Aircraft()
+        aircraft.name = input.name
+        await aircraft.save()
+        socket.emit('message', 'Aircraft saved to the DB')
+        console.log('Aircraft saved to the DB')
+        console.log(aircraft);
+        sendAircraft();
+    }
+    socket.on('new_aicraft', input => { addAircraft(input) })
 
     // Edit user
     const editUser = async function (input) {

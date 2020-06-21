@@ -161,6 +161,7 @@ function renderEvents(events) {
         const endMinutes = endTime.getMinutes() >= 10 ? endTime.getMinutes() : `0${endTime.getMinutes()}`
         const newEvent = document.createElement('div')
         newEvent.setAttribute('data-_id', event._id)
+        newEvent.setAttribute('draggable', true) // FIX (continue developing)
         if (!document.getElementById(`${endDay}-${monthNames[endMonth]}`)) {
             continue loop1;
         }

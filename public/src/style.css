@@ -120,6 +120,41 @@ span[contenteditable="false"] {
     top: 2px;
 }
 
+.aircraft {
+    margin-top: 2rem;
+    box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+    width: 90%;
+    height: 90%;
+    display: inline-block;
+    border-radius: 10px;
+}
+
+.aircraft-content {
+    overflow-y: auto;
+    padding-top: 5px;
+    height: calc(100% - 35px);
+    background-color: gainsboro;
+}
+
+.aircraft-header {
+    display: flex;
+    height: 30px;
+    background-color: lightslategray;
+    color: white;
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+}
+
+.aircraft-header > div {
+    width: 50%;
+    position: relative;
+}
+
+.aircraft-header > div > span {
+    position: absolute;
+    top: 2px;
+}
+
 .user {
     display: flex;
     border: 1px solid #4a5055;
@@ -428,6 +463,20 @@ form > .form-field > input[type="submit"] {
 }
 
 #new-user-overlay {
+    width: 25%;
+    /* min-height: 450px; */
+    padding: 15px;
+    background-color: white;
+    position: absolute;
+    top: 45%;
+    left: 37.5%;
+    z-index: 999;
+    border: 1px solid lightgrey;
+    border-radius: 5px;
+    box-sizing: border-box;
+}
+
+#new-aircraft-overlay {
     width: 25%;
     /* min-height: 450px; */
     padding: 15px;

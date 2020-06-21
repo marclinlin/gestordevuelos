@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aircraft</title>
+    <link rel="stylesheet" href="/src/style.css">
+</head>
+
+<body>
+    <div class="navbar">
+        <a href="/"><span>MONTH</span></a>
+        <a href="/users/"><span>USERS</span></a>
+        <a href="/events/"><span>EVENTS</span></a>
+        <a href="/aircraft/"><span>AIRCRAFT</span></a>
+        <a href="/login/logout/" id="logout-button"><span>LOGOUT</span></a>
+        <a href='#' id='new-aircraft-button'><span>+ Aircraft</span></a>
+    </div>
+    <div id="new-aircraft-overlay" style="display: none" class="new-aircraft-form">
+        <form id="new-aircraft-form">
+            <div class="form-field">
+                <div class="label">Name</div>
+                <input type="text" id="name" name="name" autocomplete="off">
+            </div>
+            <input type="submit">
+        </form>
+    </div>
+    <div id="container">
+        <div class="aircraft">
+            <div class="aircraft-header">
+                <div class="id"><span>Id</span></div>
+                <div><span>Registration</span></div>
+                <div><span>Manage</span></div>
+            </div>
+            <div class="aircraft-content"></div>
+        </div>
+    </div>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="../aircraft.js"></script>
+</body>
+
+</html>
