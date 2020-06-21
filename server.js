@@ -6,6 +6,7 @@ const calendarDaysMonth = require('./utils/functions/functions.js')
 const Event = require('./utils/models/event.js')
 const User = require('./utils/models/user.js')
 const Aircraft = require('./utils/models/aircraft.js')
+const Room = require('./utils/models/room.js')
 const authenticateToken = require('./utils/functions/autenticateToken')
 const redirectIndex = require('./utils/functions/redirectIndex')
 const bcrypt = require('bcrypt')
@@ -38,6 +39,9 @@ app.use('/events', authenticateToken, events)
 
 const aircraft = require('./routes/aircraft')
 app.use('/aircraft', authenticateToken, aircraft)
+
+const rooms = require('./routes/rooms')
+app.use('/rooms', authenticateToken, rooms)
 
 app.get('/', authenticateToken, (req, res) => res.sendFile(path.join(__dirname, '/public/index.html')))
 
@@ -233,10 +237,17 @@ io.on('connection', socket => {
         socket.emit('message', 'Received aircraft')
         console.log('Sending aircraft')
     }
+    const sendRooms = async function () {
+        const rooms = await Room.find()
+        socket.emit('users_list', rooms)
+        socket.emit('message', 'Received rooms')
+        console.log('Sending rooms')
+    }
     socket.on('get_instructors', sendInstructors)
     socket.on('get_students', sendStudents)
     socket.on('get_users', sendUsers)
     socket.on('get_aircraft', sendAircraft)
+    socket.on('get_rooms', sendRooms)
 
     // Add user
     const addUser = async function (input) {
@@ -257,18 +268,6 @@ io.on('connection', socket => {
         sendUsers();
     }
     socket.on('new_user', input => { addUser(input) })
-
-    // Add aircraft
-    const addAircraft = async function (input) {
-        const aircraft = new Aircraft()
-        aircraft.name = input.name
-        await aircraft.save()
-        socket.emit('message', 'Aircraft saved to the DB')
-        console.log('Aircraft saved to the DB')
-        console.log(aircraft);
-        sendAircraft();
-    }
-    socket.on('new_aicraft', input => { addAircraft(input) })
 
     // Edit user
     const editUser = async function (input) {
@@ -293,6 +292,34 @@ io.on('connection', socket => {
         console.log(`User ${input.id} (${input._id}) deleted`)
         sendUsers();
     })
+
+
+    // OTHER ASSETS
+
+    // Add aircraft
+    const addAircraft = async function (input) {
+        const aircraft = new Aircraft()
+        aircraft.name = input.name
+        await aircraft.save()
+        socket.emit('message', 'Aircraft saved to the DB')
+        console.log('Aircraft saved to the DB')
+        console.log(aircraft);
+        sendAircraft();
+    }
+    socket.on('new_aicraft', input => { addAircraft(input) })
+
+
+    // Add rooms
+    const addRooms = async function (input) {
+        const room = new Room()
+        room.name = input.name
+        await room.save()
+        socket.emit('message', 'Room saved to the DB')
+        console.log('Room saved to the DB')
+        console.log(Room);
+        sendRooms();
+    }
+    socket.on('new_aicraft', input => { addAircraft(input) })
 
 
     // VIEWS

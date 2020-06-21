@@ -16,7 +16,7 @@
         <a href="/aircraft/"><span>AIRCRAFT</span></a>
         <a href="/rooms/"><span>ROOMS</span></a>
         <a href="/login/logout/" id="logout-button"><span>LOGOUT</span></a>
-        <a href='#' id='new-aircraft-button'><span>+ Aircraft</span></a>
+        <a href='#' id='new-aircraft-button'><span>+ Room</span></a>
     </div>
     <div id="new-aircraft-overlay" style="display: none" class="new-aircraft-form">
         <form id="new-aircraft-form">
@@ -31,14 +31,14 @@
         <div class="aircraft">
             <div class="aircraft-header">
                 <div class="id"><span>Id</span></div>
-                <div><span>Registration</span></div>
+                <div><span>Room name</span></div>
                 <div><span>Manage</span></div>
             </div>
             <div class="aircraft-content"></div>
         </div>
     </div>
     <script src="/socket.io/socket.io.js"></script>
-    <script src="../aircraft.js"></script>
+    <script src="../rooms.js"></script>
 </body>
 
 </html>
